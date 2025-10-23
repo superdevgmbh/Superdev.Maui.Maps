@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:c="http://Superdev.Maui.Maps"
+    xmlns:vm="clr-namespace:MapsDemoApp.ViewModels"
+    x:Class="MapsDemoApp.Views.MapDemoPage"
+    Title="MapDemoPage"
+    x:DataType="vm:MapDemoViewModel">
+    
+    <ContentPage.ToolbarItems>
+        <ToolbarItem 
+            IconImageSource="{Binding TorchOn, Converter={StaticResource BoolToTorchConverter}}"
+            Command="{Binding ToggleTorchCommand}"  />
+    </ContentPage.ToolbarItems>
+    
+    <Grid RowDefinitions="*, Auto">
+        <!--<c:CameraView
+            Grid.Row="0"
+            BarcodeFormats="QR"
+            CameraEnabled="{Binding IsScannerEnabled}"
+            OnDetectionFinishedCommand="{Binding OnDetectionFinishedCommand}"
+            PauseScanning="{Binding IsScannerPause}"
+            TorchOn="{Binding TorchOn}"/>
+
+        <c:QRCodeOverlay
+            BracketColor="{StaticResource Primary}"
+            ShadeColor="Black"
+            ShadeOpacity="0.5" />-->
+
+        <VerticalStackLayout
+            Grid.Row="1"
+            Padding="16"
+            Spacing="16"
+            VerticalOptions="Start">
+
+            <Grid
+                ColumnDefinitions="*, *"
+                ColumnSpacing="8"
+                VerticalOptions="Fill">
+
+                <Button
+                    Grid.Column="0"
+                    Command="{Binding StartCameraCommand}"
+                    Text="Start Camera"
+                    HorizontalOptions="Fill" />
+                <Button
+                    Grid.Column="1"
+                    Command="{Binding StopCameraCommand}"
+                    Text="Stop Camera"
+                    HorizontalOptions="Fill" />
+            </Grid>
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

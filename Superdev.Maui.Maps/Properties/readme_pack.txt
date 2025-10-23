@@ -1,0 +1,1 @@
+﻿dotnet pack .\Superdev.Maui.Maps\Superdev.Maui.Maps.csproj /p:Version=1.0.0-pre
