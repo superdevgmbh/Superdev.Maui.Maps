@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Superdev.Maui.Maps.Tests
 {
-    public class BarcodeResultTests
+    public class EmptyTests
     {
         [Fact]
         public void ShouldTest()
