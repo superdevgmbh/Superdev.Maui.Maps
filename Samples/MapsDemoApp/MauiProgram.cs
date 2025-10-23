@@ -5,6 +5,7 @@ using Superdev.Maui.Maps;
 using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
+using Superdev.Maui;
 
 namespace MapsDemoApp
 {
@@ -15,7 +16,7 @@ namespace MapsDemoApp
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
-                //.UseSuperdev()
+                .UseSuperdevMaui()
                 .UseSuperdevMauiMaps()
                 .UseMauiCommunityToolkit()
                 .ConfigureFonts(fonts =>
