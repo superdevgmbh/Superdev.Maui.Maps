@@ -1,5 +1,4 @@
 ﻿using MapsDemoApp.Services.Logging;
-using MapsDemoApp.Services.Navigation;
 using MapsDemoApp.ViewModels;
 using MapsDemoApp.Views;
 using Superdev.Maui.Maps;
@@ -16,25 +15,9 @@ namespace MapsDemoApp
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
+                //.UseSuperdev()
                 .UseSuperdevMauiMaps()
-                .UseMauiCommunityToolkit(o =>
-                {
-                    o.SetPopupDefaults(new DefaultPopupSettings
-                    {
-                        Margin = 0,
-                        Padding = 0,
-                        VerticalOptions = LayoutOptions.Center,
-                        HorizontalOptions = LayoutOptions.Center,
-                        CanBeDismissedByTappingOutsideOfPopup = false,
-                    });
-                    o.SetPopupOptionsDefaults(new DefaultPopupOptionsSettings
-                    {
-                        PageOverlayColor = Colors.Black.WithAlpha(0.5f),
-                        Shadow = null,
-                        Shape = null,
-                        CanBeDismissedByTappingOutsideOfPopup = false,
-                    });
-                })
+                .UseMauiCommunityToolkit()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("IBMPlexMono-Bold.ttf", "IBMPlexMonoBold");
@@ -53,10 +36,6 @@ namespace MapsDemoApp
             });
 
             // Register services
-            builder.Services.AddSingleton<IPageResolver, PageResolver>();
-            builder.Services.AddSingleton<INavigationService, MauiNavigationService>();
-            builder.Services.AddSingleton<IPopupService2, PopupService>();
-            builder.Services.AddSingleton<IDialogService, DialogService>();
             builder.Services.AddSingleton<ILauncher>(_ => Launcher.Default);
             builder.Services.AddSingleton<IMediaPicker>(_ => MediaPicker.Default);
             builder.Services.AddSingleton<IClipboard>(_ => Clipboard.Default);

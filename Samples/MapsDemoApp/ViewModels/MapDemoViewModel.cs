@@ -1,8 +1,8 @@
-﻿using MapsDemoApp.Services.Navigation;
-using Superdev.Maui.Maps;
+﻿using Superdev.Maui.Maps;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using Superdev.Maui.Services;
 
 namespace MapsDemoApp.ViewModels
 {
