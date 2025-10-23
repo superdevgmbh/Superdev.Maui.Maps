@@ -98,7 +98,6 @@
     <Folder Include="Controls\" />
     <Folder Include="Platforms\Android\Services\" />
     <Folder Include="Platforms\iOS\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>
