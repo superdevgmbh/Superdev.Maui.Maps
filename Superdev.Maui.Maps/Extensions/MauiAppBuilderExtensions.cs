@@ -7,14 +7,15 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Maps.Handlers;
+using Superdev.Maui.Maps.Controls;
 using Map = Microsoft.Maui.Controls.Maps.Map;
 
 namespace Superdev.Maui.Maps
 {
     /// <summary>
-	/// This class contains the Map's <see cref="MauiAppBuilder"/> extensions.
-	/// </summary>
-	public static class MauiAppBuilderExtensions
+    /// This class contains the Map's <see cref="MauiAppBuilder"/> extensions.
+    /// </summary>
+    public static class MauiAppBuilderExtensions
     {
         /// <summary>
         /// Configures <see cref="MauiAppBuilder"/> to add support for the <see cref="Map"/> control.
@@ -62,17 +63,24 @@ namespace Superdev.Maui.Maps
         /// <summary>
         /// Registers the .NET MAUI Maps handlers that are needed to render the map control.
         /// </summary>
-        /// <param name="handlersCollection">An instance of <see cref="IMauiHandlersCollection"/> on which to register the map handlers.</param>
+        /// <param name="handlers">An instance of <see cref="IMauiHandlersCollection"/> on which to register the map handlers.</param>
         /// <returns>The provided <see cref="IMauiHandlersCollection"/> object with the registered map handlers for subsequent registration calls.</returns>
-        public static IMauiHandlersCollection AddMauiMaps(this IMauiHandlersCollection handlersCollection)
+        public static IMauiHandlersCollection AddMauiMaps(this IMauiHandlersCollection handlers)
         {
-#if __ANDROID__ || __IOS__
-            handlersCollection.AddHandler<Map, MapHandler>();
-            handlersCollection.AddHandler<Pin, MapPinHandler>();
-            handlersCollection.AddHandler<MapElement, MapElementHandler>();
+#if (ANDROID || IOS)
+#if IOS
+            handlers.AddHandler<Map, Platforms.Handlers.MapHandler>();
+
+#endif
+            handlers.AddHandler<Pin, MapPinHandler>();
+
+            handlers.AddHandler<CustomMap, Platforms.Handlers.CustomMapHandler>();
+            handlers.AddHandler<CustomPin, Platforms.Handlers.CustomMapPinHandler>();
+
+            handlers.AddHandler<MapElement, MapElementHandler>();
 #endif
 
-            return handlersCollection;
+            return handlers;
         }
     }
 }

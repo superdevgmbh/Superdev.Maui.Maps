@@ -54,8 +54,13 @@
                 Text="Test Pages" />
             <Button
                 Command="{Binding NavigateToPageCommand}"
-                CommandParameter="MapsDemoPage"
-                Text="Maps Demo"
+                CommandParameter="MauiMapDemoPage"
+                Text="Microsoft.Maui.Maps Demo"
+                HorizontalOptions="Fill" />
+            <Button
+                Command="{Binding NavigateToPageCommand}"
+                CommandParameter="MapDemoPage"
+                Text="Superdev.Maui.Maps Demo"
                 HorizontalOptions="Fill" />
         </VerticalStackLayout>
     </ScrollView>

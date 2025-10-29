@@ -33,4 +33,15 @@ This documentation only demonstrates the use of Superdev.Maui.Maps within a XAML
 Contributors welcome! If you find a bug or you want to propose a new feature, feel free to do so by opening a new issue on github.com.
 
 ### Links
-- tbd
+- https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/map
+- https://github.com/TorbenK/TK.CustomMap
+- https://github.com/symbiogenesis/MauiMvvmMap
+- https://github.com/RustaMSHar/MapsDemo
+- https://github.com/TrashMob-eco/TrashMob
+- https://github.com/ErNeRooo/AirsoftBmsApp
+- https://github.com/VladislavAntonyuk/MauiSamples/tree/main/MauiMaps
+- https://github.com/dmariogatto/Maui.Controls.BetterMaps
+- https://github.com/CarlosMenendezSMSopen/VMedic
+- https://github.com/iratrips-india/IratripsMapKit/tree/maui
+- https://github.com/dotnet/macios/blob/main/src/mapkit.cs
+- https://github.com/NAXAM/cchmapclustercontroller-ios-binding/

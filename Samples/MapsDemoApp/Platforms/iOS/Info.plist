@@ -33,5 +33,9 @@
     <string>Light</string>
     <key>ITSAppUsesNonExemptEncryption</key>
     <false/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>The app uses your location to show your current position on the map.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>The app uses your location to show your current position on the map.</string>
 </dict>
 </plist>

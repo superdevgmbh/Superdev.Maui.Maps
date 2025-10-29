@@ -3,6 +3,7 @@ using MapsDemoApp.ViewModels;
 using MapsDemoApp.Views;
 using Superdev.Maui.Maps;
 using CommunityToolkit.Maui;
+using MapsDemoApp.Services;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
 using Superdev.Maui;
@@ -41,10 +42,15 @@ namespace MapsDemoApp
             builder.Services.AddSingleton<IMediaPicker>(_ => MediaPicker.Default);
             builder.Services.AddSingleton<IClipboard>(_ => Clipboard.Default);
             builder.Services.AddSingleton<IShare>(_ => Share.Default);
+            builder.Services.AddSingleton<IGeolocation>(_ => Geolocation.Default);
+            builder.Services.AddSingleton<IParkingLotService, ParkingLotService>();
 
             // Register pages and view models
             builder.Services.AddTransient<MainPage>();
             builder.Services.AddTransient<MainViewModel>();
+
+            builder.Services.AddTransient<MauiMapDemoPage>();
+            builder.Services.AddTransient<MauiMapDemoViewModel>();
 
             builder.Services.AddTransient<MapDemoPage>();
             builder.Services.AddTransient<MapDemoViewModel>();

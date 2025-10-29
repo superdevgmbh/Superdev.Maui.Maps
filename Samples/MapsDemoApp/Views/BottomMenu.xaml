@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentView
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:s="http://schemas.superdev.ch/dotnet/2021/maui"
+    x:Class="MapsDemoApp.Views.BottomMenu">
+    <ContentView.Resources>
+        <ResourceDictionary>
+            <Style
+                x:Key="SectionLabelStyle"
+                TargetType="Label">
+                <Setter Property="BackgroundColor" Value="LightGray" />
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="HorizontalOptions" Value="Fill" />
+                <Setter Property="FontSize" Value="Medium" />
+            </Style>
+        </ResourceDictionary>
+    </ContentView.Resources>
+    <ScrollView
+        Padding="16"
+        HeightRequest="200"
+        VerticalScrollBarVisibility="Always">
+        <VerticalStackLayout
+            Spacing="16"
+            VerticalOptions="Start">
+            <VerticalStackLayout Spacing="4">
+                <Label
+                    Style="{StaticResource SectionLabelStyle}"
+                    Text="IsShowingUser" />
+                <Grid
+                    ColumnDefinitions="Auto,*"
+                    ColumnSpacing="8">
+                    <Switch
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        IsToggled="{Binding IsShowingUser}"
+                        VerticalOptions="Center">
+                        <Switch.Behaviors>
+                            <s:EventToCommandBehavior
+                                Command="{Binding IsShowingUserToggledCommand}"
+                                EventName="Toggled" />
+                        </Switch.Behaviors>
+                    </Switch>
+                    <Label
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Text="{Binding IsShowingUser, StringFormat='{0}'}"
+                        VerticalTextAlignment="Center" />
+                </Grid>
+
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="4">
+                <Label
+                    Style="{StaticResource SectionLabelStyle}"
+                    Text="CurrentPosition" />
+                <Grid
+                    ColumnDefinitions="*,Auto"
+                    ColumnSpacing="8">
+                    <VerticalStackLayout Grid.Column="0">
+                        <Label>
+                            <Label.Text>
+                                <MultiBinding StringFormat="Longitude: {0:F5}&#10;Latitude: {1:F5}&#10;Altitude: {2:F2}">
+                                    <Binding Path="CurrentPosition.Longitude" />
+                                    <Binding Path="CurrentPosition.Latitude" />
+                                    <Binding Path="CurrentPosition.Altitude" />
+                                </MultiBinding>
+                            </Label.Text>
+                        </Label>
+                    </VerticalStackLayout>
+                    <Button
+                        Grid.Column="1"
+                        Command="{Binding GetCurrentPositionCommand}"
+                        ImageSource="crosshairs_gps_white"
+                        MaximumHeightRequest="48"
+                        MaximumWidthRequest="48"
+                        HorizontalOptions="End"
+                        VerticalOptions="Start" />
+                </Grid>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="4">
+                <Label
+                    Style="{StaticResource SectionLabelStyle}"
+                    Text="Zoom [km]" />
+                <VerticalStackLayout Spacing="8">
+                    <Entry Text="{Binding ZoomLevel, Converter={StaticResource DistanceToStringConverter}, ConverterParameter=km}" />
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="4">
+                <Label
+                    Style="{StaticResource SectionLabelStyle}"
+                    Text="MapSpan" />
+                <VerticalStackLayout Spacing="8">
+                    <Label>
+                        <Label.Text>
+                            <MultiBinding StringFormat="Center.Longitude: {0:F5}&#10;Center.Latitude: {1:F5}&#10;LatitudeDegrees: {2:F2}&#10;LongitudeDegrees: {3:F2}">
+                                <Binding Path="MapSpan.Center.Longitude" />
+                                <Binding Path="MapSpan.Center.Latitude" />
+                                <Binding Path="MapSpan.LatitudeDegrees" />
+                                <Binding Path="MapSpan.LongitudeDegrees" />
+                            </MultiBinding>
+                        </Label.Text>
+                    </Label>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="4">
+                <Label
+                    Style="{StaticResource SectionLabelStyle}"
+                    Text="ItemsSource" />
+                <ScrollView Orientation="Horizontal">
+                    <HorizontalStackLayout Spacing="8">
+                        <Button
+                            Command="{Binding AddPinCommand}"
+                            Text="Add" />
+                        <Button
+                            Command="{Binding RemovePinCommand}"
+                            Text="Remove" />
+                        <Button
+                            Command="{Binding ClearAllPinsCommand}"
+                            Text="Clear" />
+                    </HorizontalStackLayout>
+                </ScrollView>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="4">
+                <Label
+                    Style="{StaticResource SectionLabelStyle}"
+                    Text="SelectedItem" />
+                <Label>
+                    <Label.Text>
+                        <MultiBinding StringFormat="Name: {0}&#10;Longitude: {1:F5}&#10;Latitude: {2:F5}">
+                            <Binding Path="SelectedParkingLot.Name" />
+                            <Binding Path="SelectedParkingLot.Location.Longitude" />
+                            <Binding Path="SelectedParkingLot.Location.Latitude" />
+                        </MultiBinding>
+                    </Label.Text>
+                </Label>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="4">
+                <Label
+                    Style="{StaticResource SectionLabelStyle}"
+                    Text="MapElements" />
+                <ScrollView Orientation="Horizontal">
+                    <HorizontalStackLayout Spacing="8">
+                        <Button
+                            Command="{Binding AddPolygonsCommand}"
+                            Text="Add polygons" />
+                        <Button
+                            Command="{Binding AddPolylinesCommand}"
+                            Text="Add polylines" />
+                        <Button
+                            Command="{Binding AddCirclesCommand}"
+                            Text="Add circles" />
+                        <Button
+                            Command="{Binding ClearMapElementsCommand}"
+                            Text="Clear" />
+                    </HorizontalStackLayout>
+                </ScrollView>
+            </VerticalStackLayout>
+
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentView>

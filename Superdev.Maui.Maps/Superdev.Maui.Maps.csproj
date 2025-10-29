@@ -93,11 +93,5 @@
     <TrimmerRootDescriptor Include="ILLink.Descriptors.xml" RootMode="All" />
     <EmbeddedResource Include="Platforms\Android\ILLink.Descriptors.xml" LogicalName="ILLink.Descriptors.xml" />
   </ItemGroup>
-  
-  <ItemGroup>
-    <Folder Include="Controls\" />
-    <Folder Include="Platforms\Android\Services\" />
-    <Folder Include="Platforms\iOS\" />
-  </ItemGroup>
 
 </Project>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:m="http://Superdev.Maui.Maps"
+    xmlns:maps="http://schemas.microsoft.com/dotnet/2021/maui/maps"
+    xmlns:s="http://schemas.superdev.ch/dotnet/2021/maui"
+    xmlns:sensors="clr-namespace:Microsoft.Maui.Devices.Sensors;assembly=Microsoft.Maui.Essentials"
+    xmlns:views="clr-namespace:MapsDemoApp.Views"
+    xmlns:vm="clr-namespace:MapsDemoApp.ViewModels"
+    x:Class="MapsDemoApp.Views.MauiMapDemoPage"
+    Title="Microsoft.Maui.Maps Demo"
+    x:DataType="vm:MapDemoViewModel">
+
+    <ContentPage.Behaviors>
+        <s:EventToCommandBehavior
+            Command="{Binding AppearingCommand}"
+            EventName="Appearing" />
+    </ContentPage.Behaviors>
+
+    <Grid>
+        <Grid RowDefinitions="*, Auto">
+            <maps:Map
+                x:Name="ThisNeedsToBeHereOtherwiseYouGetAStupidCannotResolveTypeError"
+                Grid.Row="0"
+                IsShowingUser="{Binding IsShowingUser, Mode=OneWay}"
+                ItemsSource="{Binding ParkingLots}"
+                MapType="Street">
+                <x:Arguments>
+                    <maps:MapSpan>
+                        <x:Arguments>
+                            <sensors:Location>
+                                <x:Arguments>
+                                    <x:Double>47.18</x:Double>
+                                    <x:Double>8.47</x:Double>
+                                </x:Arguments>
+                            </sensors:Location>
+                            <x:Double>2</x:Double>
+                            <x:Double>2</x:Double>
+                        </x:Arguments>
+                    </maps:MapSpan>
+                </x:Arguments>
+                <!-- <maps:Map.ItemTemplate> -->
+                <!--     <DataTemplate x:DataType="vm:ParkingLotViewModel"> -->
+                <!--  <m:CustomPin  -->
+                <!--  ImageSource="{Binding Source={x:RelativeSource Self}, Path=IsSelected, Converter={StaticResource BoolToPushPinImageSourceConverter}}"  -->
+                <!--  Location="{Binding Location}" />  -->
+                <!--     </DataTemplate> -->
+                <!-- </maps:Map.ItemTemplate> -->
+            </maps:Map>
+
+            <views:BottomMenu Grid.Row="1" />
+        </Grid>
+
+        <s:PageActivityIndicator
+            Grid.Row="0"
+            IsBusy="{Binding IsBusy}" />
+    </Grid>
+</ContentPage>
