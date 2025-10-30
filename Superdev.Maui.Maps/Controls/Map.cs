@@ -431,11 +431,6 @@ namespace Superdev.Maui.Maps.Controls
 
         private void PinsOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (e.NewItems is not null && e.NewItems.Cast<Pin>().Any(pin => pin.Label == null))
-            {
-                throw new ArgumentException("Pin must have a Label to be added to a map");
-            }
-
             this.Handler?.UpdateValue(nameof(IMap.Pins));
         }
 
@@ -487,7 +482,6 @@ namespace Superdev.Maui.Maps.Controls
             }
 
             var pin = (Pin)itemTemplate.CreateContent();
-            pin.Label ??= string.Empty;
             pin.Map = new WeakReference<Map>(this);
             pin.BindingContext = newItem;
             this.pins.Add(pin);
