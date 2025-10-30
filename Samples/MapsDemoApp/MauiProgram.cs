@@ -55,6 +55,8 @@ namespace MapsDemoApp
             builder.Services.AddTransient<MapDemoPage>();
             builder.Services.AddTransient<MapDemoViewModel>();
 
+            builder.Services.AddTransient<EmptyMapDemoPage>();
+
             return builder.Build();
         }
     }

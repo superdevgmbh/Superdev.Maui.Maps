@@ -21,7 +21,6 @@ namespace Superdev.Maui.Maps.Controls
         public static readonly MapSpan DefaultMapSpan = MapSpan.FromCenterAndRadius(DefaultCenterPosition, DefaultZoomLevel);
 
         private readonly ObservableCollection<Pin> pins = new();
-        private readonly ObservableCollection<MapElement> mapElements = new();
         private MapSpan visibleRegion;
         private MapSpan lastMoveToRegion;
 
@@ -44,7 +43,6 @@ namespace Superdev.Maui.Maps.Controls
             this.VerticalOptions = this.HorizontalOptions = LayoutOptions.Fill;
 
             this.pins.CollectionChanged += this.PinsOnCollectionChanged; // TODO: Unsubscribe!!
-            this.mapElements.CollectionChanged += this.MapElementsCollectionChanged; // TODO: Unsubscribe!!
         }
 
         public static readonly BindableProperty IsScrollEnabledProperty = BindableProperty.Create(
@@ -523,7 +521,10 @@ namespace Superdev.Maui.Maps.Controls
             }
         }
 
-        IList<IMapElement> IMap.Elements => this.MapElements.Cast<IMapElement>().ToList();
+        IList<IMapElement> IMap.Elements
+        {
+            get => this.MapElements?.Cast<IMapElement>().ToList();
+        }
 
         IList<IMapPin> IMap.Pins => this.pins.Cast<IMapPin>().ToList();
 

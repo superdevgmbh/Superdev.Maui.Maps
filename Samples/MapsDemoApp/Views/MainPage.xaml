@@ -51,16 +51,27 @@
 
             <Label
                 Style="{StaticResource Heading2LabelStyle}"
-                Text="Test Pages" />
+                Text="Microsoft.Maui.Maps" />
             <Button
                 Command="{Binding NavigateToPageCommand}"
                 CommandParameter="MauiMapDemoPage"
-                Text="Microsoft.Maui.Maps Demo"
+                Text="Maps Demo"
                 HorizontalOptions="Fill" />
+
+            <controls:DividerLine />
+
+            <Label
+                Style="{StaticResource Heading2LabelStyle}"
+                Text="Superdev.Maui.Maps" />
             <Button
                 Command="{Binding NavigateToPageCommand}"
                 CommandParameter="MapDemoPage"
-                Text="Superdev.Maui.Maps Demo"
+                Text="Maps with custom pins"
+                HorizontalOptions="Fill" />
+            <Button
+                Command="{Binding NavigateToPageCommand}"
+                CommandParameter="EmptyMapDemoPage"
+                Text="Empty map"
                 HorizontalOptions="Fill" />
         </VerticalStackLayout>
     </ScrollView>
