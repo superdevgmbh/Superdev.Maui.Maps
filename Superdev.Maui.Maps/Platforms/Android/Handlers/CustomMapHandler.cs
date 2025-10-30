@@ -8,6 +8,7 @@ using Microsoft.Maui.Maps.Handlers;
 using Microsoft.Maui.Platform;
 using Superdev.Maui.Maps.Controls;
 using IMap = Microsoft.Maui.Maps.IMap;
+using Map = Superdev.Maui.Maps.Controls.Map;
 
 namespace Superdev.Maui.Maps.Platforms.Handlers
 {
@@ -20,7 +21,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             [nameof(Microsoft.Maui.Controls.Maps.Map.Pins)] = IgnoreMapPinUpdate,
             [nameof(Microsoft.Maui.Controls.Maps.Map.ItemsSource)] = IgnoreItemsSourceUpdate,
             ["AllPins"] = UpdatePins,
-            [nameof(CustomMap.SelectedItem)] = MapSelectedItem
+            [nameof(Controls.Map.SelectedItem)] = MapSelectedItem
         };
 
         public CustomMapHandler()
@@ -33,7 +34,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
         {
         }
 
-        private new CustomMap VirtualView => (CustomMap)base.VirtualView;
+        private new Map VirtualView => (Map)base.VirtualView;
 
         internal List<(IMapPin Pin, Marker Marker)> Markers { get; } = new List<(IMapPin pin, Marker marker)>();
 
@@ -124,7 +125,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                 {
                     var markerOptions = mapPinHandler.PlatformView;
 
-                    if (pin is CustomPin { ImageSource: ImageSource imageSource } customPin)
+                    if (pin is Pin { ImageSource: ImageSource imageSource } customPin)
                     {
                         try
                         {
@@ -157,12 +158,12 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                 return;
             }
 
-            if (customMapHandler.VirtualView is not CustomMap customMap)
+            if (customMapHandler.VirtualView is not Map customMap)
             {
                 return;
             }
 
-            var selectedPins = customMap.Pins.OfType<CustomPin>()
+            var selectedPins = customMap.Pins
                 .Where(p => p.IsSelected)
                 .ToArray();
 
@@ -173,11 +174,11 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
             if (customMap.SelectedItem is object selectedItem)
             {
-                var selectedPin = selectedItem as CustomPin;
+                var selectedPin = selectedItem as Pin;
                 if (selectedPin == null)
                 {
                     var pins = customMapHandler.VirtualView.Pins;
-                    selectedPin = pins.SingleOrDefault(p => Equals(p.BindingContext, customMap.SelectedItem)) as CustomPin;
+                    selectedPin = pins.SingleOrDefault(p => Equals(p.BindingContext, customMap.SelectedItem));
                 }
 
                 if (selectedPin != null)
@@ -187,13 +188,13 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             }
         }
 
-        internal void RefreshPin(CustomPin customPin)
+        internal void RefreshPin(Pin pin)
         {
-            var markerMapping = this.Markers.FirstOrDefault(m => m.Pin.MarkerId == customPin.MarkerId);
+            var markerMapping = this.Markers.FirstOrDefault(m => m.Pin.MarkerId == pin.MarkerId);
             if (markerMapping != default)
             {
-                Debug.WriteLine($"RefreshPin: MarkerId={customPin.MarkerId}");
-                this.UpdatePins(new[] { customPin }, new[] { markerMapping });
+                Debug.WriteLine($"RefreshPin: MarkerId={pin.MarkerId}");
+                this.UpdatePins(new[] { pin }, new[] { markerMapping });
             }
         }
 

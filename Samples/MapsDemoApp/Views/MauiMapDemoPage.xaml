@@ -22,7 +22,7 @@
     <Grid>
         <Grid RowDefinitions="*, Auto">
             <maps:Map
-                x:Name="ThisNeedsToBeHereOtherwiseYouGetAStupidCannotResolveTypeError"
+                x:Name="MicrosoftMauiMap"
                 Grid.Row="0"
                 IsShowingUser="{Binding IsShowingUser, Mode=OneWay}"
                 ItemsSource="{Binding ParkingLots}"
@@ -41,13 +41,14 @@
                         </x:Arguments>
                     </maps:MapSpan>
                 </x:Arguments>
-                <!-- <maps:Map.ItemTemplate> -->
-                <!--     <DataTemplate x:DataType="vm:ParkingLotViewModel"> -->
-                <!--  <m:CustomPin  -->
-                <!--  ImageSource="{Binding Source={x:RelativeSource Self}, Path=IsSelected, Converter={StaticResource BoolToPushPinImageSourceConverter}}"  -->
-                <!--  Location="{Binding Location}" />  -->
-                <!--     </DataTemplate> -->
-                <!-- </maps:Map.ItemTemplate> -->
+                <maps:Map.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ParkingLotViewModel">
+                        <maps:Pin
+                            Address="Add more information here..."
+                            Label="{Binding Name}"
+                            Location="{Binding Location}" />
+                    </DataTemplate>
+                </maps:Map.ItemTemplate>
             </maps:Map>
 
             <views:BottomMenu Grid.Row="1" />

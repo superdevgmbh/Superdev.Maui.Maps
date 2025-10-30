@@ -3,6 +3,7 @@ using Android.Gms.Maps;
 using Android.Gms.Maps.Model;
 using Superdev.Maui.Maps.Controls;
 using static Android.Gms.Maps.GoogleMap;
+using Map = Superdev.Maui.Maps.Controls.Map;
 
 namespace Superdev.Maui.Maps.Platforms.Handlers
 {
@@ -17,7 +18,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         public bool OnMarkerClick(Marker marker)
         {
-            if (this.customMapHandler.VirtualView is not CustomMap customMap)
+            if (this.customMapHandler.VirtualView is not Map customMap)
             {
                 return true;
             }
@@ -30,10 +31,10 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             var m = this.customMapHandler.Markers.FirstOrDefault(x => x.Marker.Id == marker.Id);
             if (m != default)
             {
-                var selectedPin = m.Pin as CustomPin;
+                var selectedPin = m.Pin as Pin;
                 if (selectedPin != null)
                 {
-                    var selectedPins = customMap.Pins.OfType<CustomPin>()
+                    var selectedPins = customMap.Pins
                         .Where(p => p.IsSelected);
 
                     foreach (var customPin in selectedPins)

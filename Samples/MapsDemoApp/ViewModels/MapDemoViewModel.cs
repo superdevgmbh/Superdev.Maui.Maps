@@ -10,6 +10,7 @@ using Superdev.Maui.Maps.Extensions;
 using Superdev.Maui.Mvvm;
 using Superdev.Maui.Services;
 using IPreferences = Superdev.Maui.Services.IPreferences;
+using Map = Superdev.Maui.Maps.Controls.Map;
 
 namespace MapsDemoApp.ViewModels
 {
@@ -20,23 +21,21 @@ namespace MapsDemoApp.ViewModels
             IDialogService dialogService,
             IGeolocation geolocation,
             IParkingLotService parkingLotService,
-            IPreferences preferences)
-            : base(logger, dialogService, geolocation, parkingLotService, preferences)
+            IPreferences preferences,
+            IToastService toastService)
+            : base(logger, dialogService, geolocation, parkingLotService, preferences, toastService)
         {
         }
     }
 
     public class MapDemoViewModel : BaseViewModel
     {
-        private static readonly ParkingLotViewModel TestParkingLotViewModel = new ParkingLotViewModel(
-            "Switzerland",
-            new Location(latitude: 46.7985624, longitude: 8.47552828101288));
-
         private readonly ILogger logger;
         private readonly IDialogService dialogService;
         private readonly IGeolocation geolocation;
         private readonly IParkingLotService parkingLotService;
         private readonly IPreferences preferences;
+        private readonly IToastService toastService;
 
         private bool isShowingUser;
         private bool isReadonly;
@@ -63,13 +62,15 @@ namespace MapsDemoApp.ViewModels
             IDialogService dialogService,
             IGeolocation geolocation,
             IParkingLotService parkingLotService,
-            IPreferences preferences)
+            IPreferences preferences,
+            IToastService toastService)
         {
             this.logger = logger;
             this.dialogService = dialogService;
             this.geolocation = geolocation;
             this.parkingLotService = parkingLotService;
             this.preferences = preferences;
+            this.toastService = toastService;
         }
 
         public IAsyncRelayCommand AppearingCommand
@@ -97,20 +98,31 @@ namespace MapsDemoApp.ViewModels
 
                 var parkingLots = await this.parkingLotService.GetAllAsync();
                 this.ParkingLots = parkingLots
-                    .Select(p => new ParkingLotViewModel(p.Name, p.Location))
+                    .Select(p => new ParkingLotViewModel(this.toastService, p.Name, p.Location))
                     .OrderBy(p => p.Name)
                     .ToObservableCollection();
 
-                var centerLocation = parkingLots.Select(p => p.Location).GetCenterLocation();
+                var parkingLocations = parkingLots.Select(p => p.Location).ToArray();
+                var centerLocation = parkingLocations.GetCenterLocation();
                 if (centerLocation != null)
                 {
-                    this.ZoomLevel = Distance.FromKilometers(300);
                     this.CurrentPosition = centerLocation;
                 }
                 else
                 {
-                    this.ZoomLevel = CustomMap.DefaultZoomLevel;
-                    this.CurrentPosition = CustomMap.DefaultCenterPosition;
+                    this.CurrentPosition = Map.DefaultCenterPosition;
+                }
+
+                if (parkingLocations.Any())
+                {
+                    var zoomLevel = parkingLocations.CalculateDistance() is Distance d
+                        ? Distance.FromKilometers(d.Kilometers * 0.55d)
+                        : Distance.FromKilometers(300);
+                    this.ZoomLevel = zoomLevel;
+                }
+                else
+                {
+                    this.ZoomLevel = Map.DefaultZoomLevel;
                 }
             }
             catch (Exception ex)
@@ -190,7 +202,9 @@ namespace MapsDemoApp.ViewModels
                 this.CurrentPosition = null;
 
                 var request = new GeolocationRequest(GeolocationAccuracy.Best, timeout: TimeSpan.FromSeconds(5));
-                this.CurrentPosition = await this.geolocation.GetLocationAsync(request);
+                var currentLocation = await this.geolocation.GetLocationAsync(request);
+                this.CurrentPosition = currentLocation;
+                this.MapSpan = MapSpan.FromCenterAndRadius(currentLocation!, Distance.FromKilometers(3));
             }
             catch (PermissionException e)
             {
@@ -210,7 +224,12 @@ namespace MapsDemoApp.ViewModels
 
         private void AddPin()
         {
-            this.ParkingLots.Add(TestParkingLotViewModel);
+            var parkingLotViewModel = new ParkingLotViewModel(
+                this.toastService,
+                "Test",
+                new Location(latitude: 46.7985624, longitude: 8.47552828101288));
+
+            this.ParkingLots.Add(parkingLotViewModel);
         }
 
         public IRelayCommand RemovePinCommand
@@ -220,7 +239,8 @@ namespace MapsDemoApp.ViewModels
 
         private void RemovePin()
         {
-            this.ParkingLots.Remove(TestParkingLotViewModel);
+            var parkingLotViewModels = this.ParkingLots.FirstOrDefault(p => p.Name == "Test");
+            this.ParkingLots.Remove(parkingLotViewModels);
         }
 
         public IRelayCommand ClearAllPinsCommand

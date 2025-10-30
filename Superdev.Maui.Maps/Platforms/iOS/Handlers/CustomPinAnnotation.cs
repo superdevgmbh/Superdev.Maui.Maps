@@ -6,14 +6,8 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 {
     public class CustomPinAnnotation : MKPointAnnotation
     {
-        public required CustomPin Pin { get; init; }
+        public required Pin Pin { get; init; }
 
-        public string Identifier { get; init; }
-
-        public string ClassId { get; init; }
-
-        public UIImage Image { get; init; }
-
-        public Point Anchor { get; init; }
+        public UIImage Image { get; set; }
     }
 }

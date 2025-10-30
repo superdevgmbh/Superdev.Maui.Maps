@@ -1,16 +1,17 @@
 ﻿using System.Windows.Input;
-using Microsoft.Maui.Controls.Maps;
 
 namespace Superdev.Maui.Maps.Controls
 {
-    public class CustomPin : Pin
+    public class Pin : Microsoft.Maui.Controls.Maps.Pin
     {
-        public int Id { get; set; }
+        public Pin()
+        {
+        }
 
         public static readonly BindableProperty ImageSourceProperty = BindableProperty.Create(
             nameof(ImageSource),
             typeof(ImageSource),
-            typeof(CustomPin));
+            typeof(Pin));
 
         public ImageSource ImageSource
         {
@@ -21,7 +22,7 @@ namespace Superdev.Maui.Maps.Controls
         public static readonly BindableProperty AnchorProperty = BindableProperty.Create(
             nameof(Anchor),
             typeof(Point),
-            typeof(CustomPin),
+            typeof(Pin),
             new Point(0.5d, 0.5d));
 
         public Point Anchor
@@ -33,7 +34,7 @@ namespace Superdev.Maui.Maps.Controls
         public static readonly BindableProperty MarkerClickedCommandProperty = BindableProperty.Create(
             nameof(MarkerClickedCommand),
             typeof(ICommand),
-            typeof(CustomPin)
+            typeof(Pin)
         );
 
         public ICommand MarkerClickedCommand
@@ -45,7 +46,7 @@ namespace Superdev.Maui.Maps.Controls
         public static readonly BindableProperty IsSelectedProperty = BindableProperty.Create(
             nameof(IsSelected),
             typeof(bool),
-            typeof(CustomPin),
+            typeof(Pin),
             defaultBindingMode: BindingMode.OneWayToSource
         );
 
@@ -55,6 +56,6 @@ namespace Superdev.Maui.Maps.Controls
             set => this.SetValue(IsSelectedProperty, value);
         }
 
-        internal CustomMap Map { get; set; }
+        internal WeakReference<Map> Map { get; set; }
     }
 }

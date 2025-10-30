@@ -3,12 +3,9 @@ using Android.Gms.Common;
 using Android.Gms.Maps;
 #endif
 
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.LifecycleEvents;
-using Microsoft.Maui.Maps.Handlers;
 using Superdev.Maui.Maps.Controls;
-using Map = Microsoft.Maui.Controls.Maps.Map;
 
 namespace Superdev.Maui.Maps
 {
@@ -68,16 +65,16 @@ namespace Superdev.Maui.Maps
         public static IMauiHandlersCollection AddMauiMaps(this IMauiHandlersCollection handlers)
         {
 #if (ANDROID || IOS)
-#if IOS
-            handlers.AddHandler<Map, Platforms.Handlers.MapHandler>();
+            handlers.AddHandler<Microsoft.Maui.Controls.Maps.Map, Microsoft.Maui.Maps.Handlers.MapHandler>();
+
+#if IOS // TODO: Rename CustomMapHandler to MapHandler
+            handlers.AddHandler<Superdev.Maui.Maps.Controls.Map, Superdev.Maui.Maps.Platforms.Handlers.MapHandler>();
 
 #endif
-            handlers.AddHandler<Pin, MapPinHandler>();
+            handlers.AddHandler<Microsoft.Maui.Controls.Maps.Pin, Microsoft.Maui.Maps.Handlers.MapPinHandler>();
+            handlers.AddHandler<Superdev.Maui.Maps.Controls.Pin, Platforms.Handlers.MapPinHandler>();
 
-            handlers.AddHandler<CustomMap, Platforms.Handlers.CustomMapHandler>();
-            handlers.AddHandler<CustomPin, Platforms.Handlers.CustomMapPinHandler>();
-
-            handlers.AddHandler<MapElement, MapElementHandler>();
+            handlers.AddHandler<MapElement, Microsoft.Maui.Maps.Handlers.MapElementHandler>();
 #endif
 
             return handlers;

@@ -26,5 +26,36 @@ namespace Superdev.Maui.Maps.Extensions
             var centerLocation = new Location(locations.Average(p => p.Latitude), locations.Average(p => p.Longitude));
             return centerLocation;
         }
+
+        public static Distance? CalculateDistance(this IEnumerable<Location> locations)
+        {
+            if (locations == null || !locations.Any())
+            {
+                return null;
+            }
+
+            var minLat = locations.Min(l => l.Latitude);
+            var maxLat = locations.Max(l => l.Latitude);
+            var minLon = locations.Min(l => l.Longitude);
+            var maxLon = locations.Max(l => l.Longitude);
+
+            // Calculate center point
+            var centerLat = (minLat + maxLat) / 2;
+            var centerLon = (minLon + maxLon) / 2;
+
+            // Distances along each axis
+            var latDistance = Location.CalculateDistance(
+                new Location(minLat, centerLon),
+                new Location(maxLat, centerLon),
+                DistanceUnits.Kilometers);
+
+            var lonDistance = Location.CalculateDistance(
+                new Location(centerLat, minLon),
+                new Location(centerLat, maxLon),
+                DistanceUnits.Kilometers);
+
+            var maxDistanceKm = Math.Max(latDistance, lonDistance);
+            return Distance.FromKilometers(maxDistanceKm);
+        }
     }
 }

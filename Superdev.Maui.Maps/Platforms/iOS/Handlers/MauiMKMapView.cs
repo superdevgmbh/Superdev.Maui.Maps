@@ -1,11 +1,16 @@
 using System.Collections;
+using System.Diagnostics;
 using CoreLocation;
 using MapKit;
 using Microsoft.Maui.Maps;
+using Microsoft.Maui.Maps.Handlers;
 using Microsoft.Maui.Platform;
 using Superdev.Maui.Maps.Controls;
+using Superdev.Maui.Maps.Platforms.Extensions;
+using Superdev.Maui.Maps.Platforms.Utils;
 using UIKit;
 using IMap = Microsoft.Maui.Maps.IMap;
+using Map = Superdev.Maui.Maps.Controls.Map;
 
 namespace Superdev.Maui.Maps.Platforms.Handlers
 {
@@ -67,23 +72,46 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
         }
 
 
-        internal void AddPins(IList pins)
+        internal void RemoveAllAnnotations()
         {
-            this.handlerRef.TryGetTarget(out var handler);
-            if (handler?.MauiContext == null)
-            {
-                return;
-            }
-
             if (this.Annotations?.Length > 0)
             {
                 this.RemoveAnnotations(this.Annotations);
             }
+        }
 
-            foreach (IMapPin pin in pins)
+        internal void AddPins(IList pins)
+        {
+            Trace.WriteLine($"AddPins: pins={pins.Count}");
+
+            this.handlerRef.TryGetTarget(out var handler);
+            if (handler?.MauiContext is not IMauiContext mauiContext)
             {
-                if (pin.ToHandler(handler.MauiContext).PlatformView is IMKAnnotation annotation)
+                return;
+            }
+
+            foreach (Pin pin in pins)
+            {
+                if (pin.ToHandler(mauiContext) is IMapPinHandler mapPinHandler)
                 {
+                    var annotation = mapPinHandler.PlatformView;
+
+                    if (pin.ImageSource is ImageSource imageSource)
+                    {
+                        var image = ImageCache.GetImage(imageSource, mauiContext);
+
+                        // TODO: Check if we can use CustomPinAnnotation for all kind of pins
+                        annotation = new CustomPinAnnotation
+                        {
+                            // Identifier = $"{pin.Id}",
+                            Image = image,
+                            Title = pin.Label,
+                            Subtitle = pin.Address,
+                            Coordinate = new CLLocationCoordinate2D(pin.Location.Latitude, pin.Location.Longitude),
+                            Pin = pin
+                        };
+                    }
+
                     pin.MarkerId = annotation;
                     this.AddAnnotation(annotation);
                 }
@@ -105,7 +133,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             }
         }
 
-        internal void AddElements(IList elements)
+        internal void AddElements(IEnumerable elements)
         {
             foreach (IMapElement element in elements)
             {
@@ -183,9 +211,11 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         private void OnAnnotationViewSelected(MKMapView mapView, MKAnnotationView annotationView)
         {
-            var annotation = annotationView.Annotation!;
-            var pin = this.GetPinForAnnotation(annotation);
+            this.handlerRef.TryGetTarget(out var handler);
+            var map = handler?.VirtualView!;
 
+            var annotation = annotationView.Annotation!;
+            var pin = map.GetPinForAnnotation(annotation);
             if (pin == null)
             {
                 return;
@@ -212,34 +242,20 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                 map.VisibleRegion = new MapSpan(location, regionSpan.LatitudeDelta, regionSpan.LongitudeDelta);
 
                 // TODO: Refactor this!!
-                if (map is CustomMap customMap)
+                if (map is Map customMap)
                 {
                     customMap.MapSpan = map.VisibleRegion;
                 }
             }
         }
 
-        internal IMapPin GetPinForAnnotation(IMKAnnotation annotation)
+        public IMKAnnotation GetAnnotationForPin(Pin pin)
         {
-            IMapPin targetPin = null!;
-            this.handlerRef.TryGetTarget(out var handler);
-            var map = handler?.VirtualView!;
-
-            for (var i = 0; i < map.Pins.Count; i++)
-            {
-                var pin = map.Pins[i];
-                if (pin?.MarkerId as IMKAnnotation == annotation)
-                {
-                    targetPin = pin;
-                    break;
-                }
-            }
-
-            return targetPin;
+            var annotation = this.Annotations.SingleOrDefault(a => pin?.MarkerId as IMKAnnotation == a);
+            return annotation;
         }
 
-
-        private T? GetMapElement<T>(IMKOverlay mkPolyline) where T : MKOverlayRenderer
+        private T GetMapElement<T>(IMKOverlay mkPolyline) where T : MKOverlayRenderer
         {
             this.handlerRef.TryGetTarget(out var handler);
             IMap map = handler?.VirtualView;
@@ -285,5 +301,6 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                 map?.Clicked(new Location(tapGPS.Latitude, tapGPS.Longitude));
             }
         }
+
     }
 }

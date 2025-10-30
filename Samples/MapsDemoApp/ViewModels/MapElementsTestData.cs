@@ -167,6 +167,68 @@ namespace MapsDemoApp.ViewModels
                     new Location(46.160, 8.780),
                 }
             };
+
+            yield return new Polygon
+            {
+                StrokeWidth = strokeWidth,
+                StrokeColor = strokeColor,
+                FillColor = fillColor,
+                Geopath =
+                {
+                    new Location(47.181129, 8.475867),
+                    new Location(47.176901, 8.481768),
+                    new Location(47.175439, 8.49384),
+                    new Location(47.169405, 8.512639),
+                    new Location(47.137371, 8.504602),
+                    new Location(47.12442, 8.493673),
+                    new Location(47.109359, 8.502507),
+                    new Location(47.093844, 8.518367),
+                    new Location(47.088114, 8.521742),
+                    new Location(47.079126, 8.523908),
+                    new Location(47.070845, 8.529252),
+                    new Location(47.064813, 8.522174),
+                    new Location(47.062639, 8.516258),
+                    new Location(47.069091, 8.508985),
+                    new Location(47.080496, 8.483782),
+                    new Location(47.095928, 8.463823),
+                    new Location(47.103988, 8.476001),
+                    new Location(47.10963, 8.485473),
+                    new Location(47.113676, 8.488461),
+                    new Location(47.115682, 8.483562),
+                    new Location(47.114647, 8.473908),
+                    new Location(47.121766, 8.465396),
+                    new Location(47.13083, 8.464766),
+                    new Location(47.139693, 8.473178),
+                    new Location(47.140948, 8.472256),
+                    new Location(47.141272, 8.470232),
+                    new Location(47.139552, 8.466989),
+                    new Location(47.1386, 8.466394),
+                    new Location(47.139855, 8.462348),
+                    new Location(47.139714, 8.461396),
+                    new Location(47.141515, 8.458361),
+                    new Location(47.144408, 8.458064),
+                    new Location(47.14629, 8.458837),
+                    new Location(47.147423, 8.457499),
+                    new Location(47.148334, 8.459373),
+                    new Location(47.150499, 8.45979),
+                    new Location(47.151248, 8.462497),
+                    new Location(47.152381, 8.461664),
+                    new Location(47.155011, 8.461545),
+                    new Location(47.158656, 8.459414),
+                    new Location(47.159397, 8.460856),
+                    new Location(47.163426, 8.459446),
+                    new Location(47.166519, 8.457268),
+                    new Location(47.167869, 8.454737),
+                    new Location(47.171746, 8.452847),
+                    new Location(47.17547, 8.455923),
+                    new Location(47.178061, 8.461593),
+                    new Location(47.17915, 8.462169),
+                    new Location(47.179871, 8.468945),
+
+                    // Close the polygon explicitly
+                    new Location(47.181129, 8.475867)
+                }
+            };
         }
 
 

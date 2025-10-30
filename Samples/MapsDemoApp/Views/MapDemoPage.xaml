@@ -19,8 +19,8 @@
 
     <Grid>
         <Grid RowDefinitions="*, Auto">
-            <m:CustomMap
-                x:Name="ThisNeedsToBeHereOtherwiseYouGetAStupidCannotResolveTypeError"
+            <m:Map
+                x:Name="SuperdevMauiMap"
                 Grid.Row="0"
                 CenterPosition="{Binding CurrentPosition, Mode=OneWay}"
                 IsReadonly="{Binding IsReadonly}"
@@ -31,15 +31,27 @@
                 MapType="Street"
                 SelectedItem="{Binding SelectedParkingLot}"
                 ZoomLevel="{Binding ZoomLevel, Mode=OneWay}">
-                <m:CustomMap.ItemTemplate>
+                <!--  Default pin  -->
+                <!-- <m:Map.ItemTemplate> -->
+                <!--     <DataTemplate x:DataType="vm:ParkingLotViewModel"> -->
+                <!--  <m:Pin  -->
+                <!--  Address="Address"  -->
+                <!--  Label="{Binding Name}"  -->
+                <!--  Location="{Binding Location}" />  -->
+                <!--     </DataTemplate> -->
+                <!-- </m:Map.ItemTemplate> -->
+
+                <!--  Pin with ImageSource  -->
+                <m:Map.ItemTemplate>
                     <DataTemplate x:DataType="vm:ParkingLotViewModel">
-                        <m:CustomPin
+                        <m:Pin
                             Anchor="{Binding Anchor}"
                             ImageSource="{Binding Source={x:RelativeSource Self}, Path=IsSelected, Converter={StaticResource BoolToPushPinImageSourceConverter}}"
-                            Location="{Binding Location}" />
+                            Location="{Binding Location}"
+                            MarkerClickedCommand="{Binding MarkerClickedCommand}" />
                     </DataTemplate>
-                </m:CustomMap.ItemTemplate>
-            </m:CustomMap>
+                </m:Map.ItemTemplate>
+            </m:Map>
 
             <views:BottomMenu Grid.Row="1" />
         </Grid>
