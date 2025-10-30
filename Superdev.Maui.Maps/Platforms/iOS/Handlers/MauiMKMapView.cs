@@ -103,7 +103,6 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                         // TODO: Check if we can use CustomPinAnnotation for all kind of pins
                         annotation = new CustomPinAnnotation
                         {
-                            // Identifier = $"{pin.Id}",
                             Image = image,
                             Title = pin.Label,
                             Subtitle = pin.Address,
@@ -137,7 +136,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
         {
             foreach (IMapElement element in elements)
             {
-                IMKOverlay? overlay = null;
+                IMKOverlay overlay = null;
                 switch (element)
                 {
                     case IGeoPathMapElement geoPathElement:

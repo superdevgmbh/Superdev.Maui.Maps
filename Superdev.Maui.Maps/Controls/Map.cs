@@ -319,21 +319,20 @@ namespace Superdev.Maui.Maps.Controls
 
         private static void OnMapElementsPropertyChanged(BindableObject bindable, object oldValue, object newValue)
         {
-            var customMap = (Map)bindable;
+            var map = (Map)bindable;
 
             if (oldValue is INotifyCollectionChanged ncc)
             {
-                ncc.CollectionChanged -= customMap.MapElementsCollectionChanged;
+                ncc.CollectionChanged -= map.MapElementsCollectionChanged;
             }
 
             if (newValue is INotifyCollectionChanged ncc1)
             {
-                ncc1.CollectionChanged += customMap.MapElementsCollectionChanged;
+                ncc1.CollectionChanged += map.MapElementsCollectionChanged;
             }
 
             if (newValue is IEnumerable<MapElement> mapElements)
             {
-                var map = (Map)bindable;
                 foreach (var mapElement in mapElements)
                 {
                     map.MapElements.Add(mapElement);
@@ -372,16 +371,6 @@ namespace Superdev.Maui.Maps.Controls
             }
         }
 
-        // private void OnMapElementsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        // {
-        //     e.Apply(
-        //         insert: (item, _, __) => this.MapElements.Add((MapElement)item),
-        //         removeAt: (item, _) => this.MapElements.Remove((MapElement)item),
-        //         reset: () => this.MapElements.Clear());
-        //
-        //     this.Handler?.UpdateValue(nameof(Microsoft.Maui.Controls.Maps.Map.MapElements));
-        // }
-
         /// <summary>
         /// Gets the elements (pins, polygons, polylines, etc.) currently added to this map.
         /// </summary>
@@ -394,7 +383,7 @@ namespace Superdev.Maui.Maps.Controls
         /// <summary>
         /// Occurs when the user clicks/taps on the map control.
         /// </summary>
-        public event EventHandler<MapClickedEventArgs>? MapClicked;
+        public event EventHandler<MapClickedEventArgs> MapClicked;
 
         /// <summary>
         /// Gets the currently visible region of the map.

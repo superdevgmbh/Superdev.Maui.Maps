@@ -290,7 +290,11 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 		{
             var mapView = handler.PlatformView;
             mapView.ClearMapElements();
-			mapView.AddElements(map.Elements);
+
+            if (map.Elements is IEnumerable<IMapElement> mapElements)
+            {
+                mapView.AddElements(mapElements);
+            }
 		}
 
         private static void MapSelectedItem(MapHandler mapHandler, Map map)
