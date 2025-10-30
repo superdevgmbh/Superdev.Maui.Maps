@@ -34,6 +34,11 @@
                 <!--  Default pin  -->
                 <!-- <m:Map.ItemTemplate> -->
                 <!--     <DataTemplate x:DataType="vm:ParkingLotViewModel"> -->
+                <!--    -->
+                <!--  ~1~  Minimal Pin  @1@  -->
+                <!--         <m:Pin Location="{Binding Location}" /> -->
+                <!--    -->
+                <!--  ~1~  Pin with Label and Address  @1@  -->
                 <!--  <m:Pin  -->
                 <!--  Address="Address"  -->
                 <!--  Label="{Binding Name}"  -->
