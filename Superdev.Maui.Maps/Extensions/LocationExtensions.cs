@@ -21,6 +21,24 @@ namespace Superdev.Maui.Maps.Extensions
             return centerLocation;
         }
 
+        public static Location WithLatitudeOffset(this Location position, double latitudeOffset)
+        {
+            return new Location
+            {
+                Latitude = position.Latitude + latitudeOffset,
+                Longitude = position.Longitude
+            };
+        }
+
+        public static Location WithLongitudeOffset(this Location position, double longitudeOffset)
+        {
+            return new Location
+            {
+                Latitude = position.Latitude,
+                Longitude = position.Longitude + longitudeOffset
+            };
+        }
+
         public static Distance? CalculateDistance(this IEnumerable<Location> locations)
         {
             if (locations == null || !locations.Any())

@@ -58,6 +58,21 @@ namespace Superdev.Maui.Maps.Controls
             set => this.SetValue(IsScrollEnabledProperty, value);
         }
 
+        public static readonly BindableProperty IsRotateEnabledProperty = BindableProperty.Create(
+            nameof(IsRotateEnabled),
+            typeof(bool),
+            typeof(Map),
+            true);
+
+        /// <summary>
+        /// Gets or sets a value that indicates if rotating by user input is enabled. Default value is <see langword="true"/>.
+        /// </summary>
+        public bool IsRotateEnabled
+        {
+            get => (bool)this.GetValue(IsRotateEnabledProperty);
+            set => this.SetValue(IsRotateEnabledProperty, value);
+        }
+
         public static readonly BindableProperty IsZoomEnabledProperty = BindableProperty.Create(
             nameof(IsZoomEnabled),
             typeof(bool),

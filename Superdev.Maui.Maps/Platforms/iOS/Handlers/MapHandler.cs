@@ -29,6 +29,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             [nameof(IMap.MapType)] = MapMapType,
             [nameof(IMap.IsShowingUser)] = MapIsShowingUser,
             [nameof(IMap.IsScrollEnabled)] = MapIsScrollEnabled,
+            [nameof(Map.IsRotateEnabled)] = MapIsRotateEnabled,
             [nameof(IMap.IsTrafficEnabled)] = MapIsTrafficEnabled,
             [nameof(IMap.IsZoomEnabled)] = MapIsZoomEnabled,
             [nameof(IMap.Pins)] = MapPins,
@@ -267,6 +268,12 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 		{
             var mapView = handler.PlatformView;
             mapView.Map.ScrollEnabled = map.IsScrollEnabled;
+		}
+
+		public static void MapIsRotateEnabled(MapHandler handler, Map map)
+		{
+            var mapView = handler.PlatformView;
+            mapView.Map.RotateEnabled = map.IsRotateEnabled;
 		}
 
 		public static void MapIsTrafficEnabled(MapHandler handler, IMap map)

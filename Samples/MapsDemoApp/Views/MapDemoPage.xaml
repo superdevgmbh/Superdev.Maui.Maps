@@ -24,6 +24,7 @@
                 Grid.Row="0"
                 CenterPosition="{Binding CurrentPosition, Mode=OneWay}"
                 IsReadonly="{Binding IsReadonly}"
+                IsRotateEnabled="{Binding IsRotateEnabled}"
                 IsScrollEnabled="{Binding IsScrollEnabled}"
                 IsShowingUser="{Binding IsShowingUser}"
                 IsTrafficEnabled="{Binding IsTrafficEnabled}"
