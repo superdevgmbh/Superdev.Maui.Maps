@@ -24,21 +24,21 @@ namespace Superdev.Maui.Maps.Converters
                 unit = "m";
             }
 
-            if (value is string str)
+            if (value is IConvertible convertible)
             {
-                if (double.TryParse(str, out var distanceInMeters))
+                var doubleValue = convertible.ToDouble(null);
                 {
                     Distance distance;
                     switch (unit)
                     {
                         case "km":
-                            distance = Distance.FromKilometers(distanceInMeters);
+                            distance = Distance.FromKilometers(doubleValue);
                             break;
                         case "mi":
-                            distance = Distance.FromMiles(distanceInMeters);
+                            distance = Distance.FromMiles(doubleValue);
                             break;
                         default:
-                            distance = Distance.FromMeters(distanceInMeters);
+                            distance = Distance.FromMeters(doubleValue);
                             break;
                     }
 

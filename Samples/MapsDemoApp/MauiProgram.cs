@@ -56,6 +56,7 @@ namespace MapsDemoApp
             builder.Services.AddTransient<MapDemoViewModel>();
 
             builder.Services.AddTransient<EmptyMapDemoPage>();
+            builder.Services.AddTransient<EmptyMauiMapDemoPage>();
 
             return builder.Build();
         }

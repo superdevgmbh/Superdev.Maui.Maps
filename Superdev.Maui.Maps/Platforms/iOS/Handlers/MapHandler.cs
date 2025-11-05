@@ -19,7 +19,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 {
     using PM = PropertyMapper<Map, MapHandler>;
 
-    public class MapHandler : ViewHandler<Map, MauiMKMapView>
+    public class MapHandler : ViewHandler<Map, MapView>
     {
         private const string DefaultPinId = "defaultPin";
         private const string ImagePinId = "imagePin";
@@ -58,35 +58,31 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
         {
         }
 
-        protected override MauiMKMapView CreatePlatformView()
+        protected override MapView CreatePlatformView()
         {
-            var stopwatch = Stopwatch.StartNew();
-            var mapView = new MauiMKMapView(this);
-            Trace.WriteLine($"CreatePlatformView finished in {stopwatch.ElapsedMilliseconds}ms");
+            var mapView = new MapView(this);
             return mapView;
         }
 
-		protected override void ConnectHandler(MauiMKMapView platformView)
+		protected override void ConnectHandler(MapView platformView)
 		{
-			base.ConnectHandler(platformView);
-
-            platformView.Delegate.GetViewForAnnotationDelegate += this.GetViewForAnnotations;
+            var stopwatch = Stopwatch.StartNew();
+            platformView.CreateMap();
+            Trace.WriteLine($"ConnectHandler finished in {stopwatch.ElapsedMilliseconds}ms");
+            platformView.Map.Delegate.GetViewForAnnotationDelegate += this.GetViewForAnnotations;
         }
 
-        protected override void DisconnectHandler(MauiMKMapView platformView)
+        protected override void DisconnectHandler(MapView platformView)
 		{
-            platformView.Delegate.GetViewForAnnotationDelegate -= this.GetViewForAnnotations;
+            platformView.Map.Delegate.GetViewForAnnotationDelegate -= this.GetViewForAnnotations;
+            platformView.DisposeMap();
 
             ImageCache.Clear();
-			base.DisconnectHandler(platformView);
-
-			// This handler is done with the MKMapView; we can put it in the pool
-			// for other renderers to use in the future
-			// MapPool.Add(platformView);
 		}
 
         private MKAnnotationView GetViewForAnnotations(MKMapView mapView, NSObject annotationObj)
         {
+            // var stopwatch = Stopwatch.StartNew();
             if (annotationObj == null)
             {
                 return null!;
@@ -135,6 +131,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             annotationView.Annotation = annotation;
             this.AttachGestureToPin(annotationView, annotation);
 
+            // Trace.WriteLine($"GetViewForAnnotations finished in {stopwatch.ElapsedMilliseconds}ms");
             return annotationView;
         }
 
@@ -165,9 +162,9 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                 }
             }
 
-            var recognizer = new UITapGestureRecognizer(g => this.OnCalloutClicked(annotation))
+            var recognizer = new UITapGestureRecognizer(_ => this.OnCalloutClicked(annotation))
             {
-                ShouldReceiveTouch = (gestureRecognizer, touch) =>
+                ShouldReceiveTouch = (_, touch) =>
                 {
                     this.lastTouchedView = touch.View;
                     return true;
@@ -220,14 +217,16 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             var deselect = selectedPin.SendInfoWindowClick();
             if (deselect)
             {
-                this.PlatformView.DeselectAnnotation(annotation, true);
+                var mapView = this.PlatformView;
+                mapView.Map.DeselectAnnotation(annotation, true);
             }
         }
 
 		public static void MapMapType(MapHandler handler, IMap map)
         {
             var mapType = ConvertToMKMapType(map.MapType);
-            handler.PlatformView.MapType = mapType;
+            var mapView = handler.PlatformView;
+            mapView.Map.MapType = mapType;
         }
 
         private static MKMapType ConvertToMKMapType(MapType mapType)
@@ -260,23 +259,26 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 				LocationManager?.RequestWhenInUseAuthorization();
 			}
 
-            var mkMapView = handler.PlatformView;
-            mkMapView.ShowsUserLocation = map.IsShowingUser;
+            var mapView = handler.PlatformView;
+            mapView.Map.ShowsUserLocation = map.IsShowingUser;
 		}
 
 		public static void MapIsScrollEnabled(MapHandler handler, IMap map)
 		{
-			handler.PlatformView.ScrollEnabled = map.IsScrollEnabled;
+            var mapView = handler.PlatformView;
+            mapView.Map.ScrollEnabled = map.IsScrollEnabled;
 		}
 
 		public static void MapIsTrafficEnabled(MapHandler handler, IMap map)
 		{
-			handler.PlatformView.ShowsTraffic = map.IsTrafficEnabled;
+            var mapView = handler.PlatformView;
+            mapView.Map.ShowsTraffic = map.IsTrafficEnabled;
 		}
 
 		public static void MapIsZoomEnabled(MapHandler handler, IMap map)
 		{
-			handler.PlatformView.ZoomEnabled = map.IsZoomEnabled;
+            var mapView = handler.PlatformView;
+            mapView.Map.ZoomEnabled = map.IsZoomEnabled;
 		}
 
 		public static void MapPins(MapHandler handler, IMap map)
@@ -328,10 +330,21 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         public static void MapMoveToRegion(MapHandler handler, IMap map, object arg)
         {
-            if (arg is MapSpan newRegion)
+            if (arg is MapMoveRequest moveRequest)
             {
-                handler?.MoveToRegion(newRegion, animated: true);
+                handler?.MoveToRegion(moveRequest.MapSpan, moveRequest.Animated);
             }
+        }
+
+        private void MoveToRegion(MapSpan mapSpan, bool animated)
+        {
+            var center = mapSpan.Center;
+            var mapRegion = new MKCoordinateRegion(
+                center: new CLLocationCoordinate2D(center.Latitude, center.Longitude),
+                span: new MKCoordinateSpan(mapSpan.LatitudeDegrees, mapSpan.LongitudeDegrees));
+
+            var mapView = this.PlatformView;
+            mapView.Map.SetRegion(mapRegion, animated);
         }
 
         public void UpdateMapElement(IMapElement element)
@@ -340,13 +353,6 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             mapView.RemoveElements(new[] { element });
             mapView.AddElements(new[] { element });
         }
-
-        private void MoveToRegion(MapSpan mapSpan, bool animated)
-		{
-			var center = mapSpan.Center;
-			var mapRegion = new MKCoordinateRegion(new CLLocationCoordinate2D(center.Latitude, center.Longitude), new MKCoordinateSpan(mapSpan.LatitudeDegrees, mapSpan.LongitudeDegrees));
-            this.PlatformView.SetRegion(mapRegion, animated);
-		}
 
         public static void MapUpdateMapElement(MapHandler handler, IMap map, object arg)
         {

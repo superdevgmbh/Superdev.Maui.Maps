@@ -9,12 +9,6 @@
     Title="Maps for .NET MAUI"
     x:DataType="vm:MainViewModel">
 
-    <ContentPage.Behaviors>
-        <behaviors:EventToCommandBehavior
-            Command="{Binding AppearingCommand}"
-            EventName="Appearing" />
-    </ContentPage.Behaviors>
-
     <ScrollView>
         <VerticalStackLayout
             Padding="16"
@@ -56,6 +50,11 @@
                 Command="{Binding NavigateToPageCommand}"
                 CommandParameter="MauiMapDemoPage"
                 Text="Maps Demo"
+                HorizontalOptions="Fill" />
+            <Button
+                Command="{Binding NavigateToPageCommand}"
+                CommandParameter="EmptyMauiMapDemoPage"
+                Text="Empty map"
                 HorizontalOptions="Fill" />
 
             <controls:DividerLine />

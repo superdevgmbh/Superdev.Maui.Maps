@@ -9,6 +9,8 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
     public delegate void RegionDidChangeAnimatedDelegate(MKMapView mapView, bool animated);
 
+    public delegate void DidFinishRenderingMapDelegate(MKMapView mapView, bool fullyRendered);
+
     public delegate MKOverlayRenderer RendererForOverlayDelegate(MKMapView mapView, IMKOverlay overlay);
 
     public class MapViewDelegateImpl : MKMapViewDelegate
@@ -31,6 +33,14 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
         public new void RegionChanged(MKMapView mapView, bool animated)
         {
             this.RegionDidChangeAnimatedDelegate?.Invoke(mapView, animated);
+        }
+
+        public DidFinishRenderingMapDelegate DidFinishRenderingMapDelegate { get; set; }
+
+        [Export ("mapViewDidFinishRenderingMap:fullyRendered:")]
+        public new void DidFinishRenderingMap(MKMapView mapView, bool fullyRendered)
+        {
+            this.DidFinishRenderingMapDelegate?.Invoke(mapView, fullyRendered);
         }
 
         public DidSelectAnnotationViewDelegate DidSelectAnnotationViewDelegate { get; set; }

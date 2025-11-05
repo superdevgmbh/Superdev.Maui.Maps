@@ -24,13 +24,16 @@
                 Grid.Row="0"
                 CenterPosition="{Binding CurrentPosition, Mode=OneWay}"
                 IsReadonly="{Binding IsReadonly}"
+                IsScrollEnabled="{Binding IsScrollEnabled}"
                 IsShowingUser="{Binding IsShowingUser}"
+                IsTrafficEnabled="{Binding IsTrafficEnabled}"
+                IsZoomEnabled="{Binding IsZoomEnabled}"
                 ItemsSource="{Binding ParkingLots}"
                 MapElements="{Binding MapElements}"
-                MapSpan="{Binding MapSpan}"
-                MapType="Street"
+                MapType="{Binding MapType}"
                 SelectedItem="{Binding SelectedParkingLot}"
-                ZoomLevel="{Binding ZoomLevel, Mode=OneWay}">
+                VisibleRegion="{Binding VisibleRegion}"
+                ZoomLevel="{Binding ZoomLevel}">
                 <!--  Default pin  -->
                 <!-- <m:Map.ItemTemplate> -->
                 <!--     <DataTemplate x:DataType="vm:ParkingLotViewModel"> -->

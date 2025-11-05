@@ -5,10 +5,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Maps;
 using Superdev.Maui.Extensions;
-using Superdev.Maui.Maps.Controls;
 using Superdev.Maui.Maps.Extensions;
 using Superdev.Maui.Mvvm;
 using Superdev.Maui.Services;
+using Superdev.Maui.Utils;
 using IPreferences = Superdev.Maui.Services.IPreferences;
 using Map = Superdev.Maui.Maps.Controls.Map;
 
@@ -30,6 +30,9 @@ namespace MapsDemoApp.ViewModels
 
     public class MapDemoViewModel : BaseViewModel
     {
+        private static readonly TimeSpan ZoomLevelDebounceDelay = TimeSpan.FromMilliseconds(200);
+        private readonly TaskDelayer zoomLevelDebouncer = new TaskDelayer();
+
         private readonly ILogger logger;
         private readonly IDialogService dialogService;
         private readonly IGeolocation geolocation;
@@ -38,9 +41,12 @@ namespace MapsDemoApp.ViewModels
         private readonly IToastService toastService;
 
         private bool isShowingUser;
+        private bool isTrafficEnabled;
+        private bool isScrollEnabled = true;
+        private bool isZoomEnabled = true;
         private bool isReadonly;
         private Distance zoomLevel;
-        private MapSpan mapSpan;
+        private MapSpan visibleRegion;
 
         private IAsyncRelayCommand getCurrentPositionCommand;
         private IRelayCommand addPinCommand;
@@ -56,6 +62,11 @@ namespace MapsDemoApp.ViewModels
         private IRelayCommand addCirclesCommand;
         private IRelayCommand clearMapElementsCommand;
         private IRelayCommand addPolylinesCommand;
+        private IAsyncRelayCommand loadPinsCommand;
+        private MapType mapType;
+        private MapType[] mapTypes;
+        private LocationViewModel[] locations;
+        private LocationViewModel selectedLocation;
 
         public MapDemoViewModel(
             ILogger<MapDemoViewModel> logger,
@@ -96,34 +107,30 @@ namespace MapsDemoApp.ViewModels
                 this.isShowingUser = this.preferences.Get("IsShowingUser", false);
                 this.RaisePropertyChanged(nameof(this.IsShowingUser));
 
-                var parkingLots = await this.parkingLotService.GetAllAsync();
-                this.ParkingLots = parkingLots
-                    .Select(p => new ParkingLotViewModel(this.toastService, p.Name, p.Location))
-                    .OrderBy(p => p.Name)
-                    .ToObservableCollection();
+                this.Locations = new []
+                {
+                    new LocationViewModel(new Location(40.7127281d, -74.0060152d), "New York"),
+                    new LocationViewModel(new Location(48.8534951d, 2.3483915d), "Paris"),
+                    new LocationViewModel(new Location(-33.8698439d, 151.2082848d), "Sydney"),
+                    new LocationViewModel(new Location(20.8029568d, -156.3106833d), "Maui"),
+                }
+                .OrderBy(l => l.Name)
+                .ToArray();
 
-                var parkingLocations = parkingLots.Select(p => p.Location).ToArray();
+                await this.LoadPinsAsync();
+
+                var parkingLocations = this.ParkingLots.Select(p => p.Location).ToArray();
                 var centerLocation = parkingLocations.GetCenterLocation();
-                if (centerLocation != null)
-                {
-                    this.CurrentPosition = centerLocation;
-                }
-                else
-                {
-                    this.CurrentPosition = Map.DefaultCenterPosition;
-                }
+                this.CurrentPosition = centerLocation != null ? centerLocation : Map.DefaultCenter;
 
-                if (parkingLocations.Any())
-                {
-                    var zoomLevel = parkingLocations.CalculateDistance() is Distance d
-                        ? Distance.FromKilometers(d.Kilometers * 0.55d)
-                        : Distance.FromKilometers(300);
-                    this.ZoomLevel = zoomLevel;
-                }
-                else
-                {
-                    this.ZoomLevel = Map.DefaultZoomLevel;
-                }
+                var zoomLevel = parkingLocations.CalculateDistance() is Distance d
+                    ? Distance.FromKilometers(d.Kilometers * 0.5d)
+                    : Distance.FromKilometers(300);
+
+                this.ZoomLevel = zoomLevel;
+
+                this.MapTypes = Enum.GetValues<MapType>();
+                this.MapType = MapType.Street;
             }
             catch (Exception ex)
             {
@@ -156,6 +163,24 @@ namespace MapsDemoApp.ViewModels
             set => this.SetProperty(ref this.isShowingUser, value);
         }
 
+        public bool IsTrafficEnabled
+        {
+            get => this.isTrafficEnabled;
+            set => this.SetProperty(ref this.isTrafficEnabled, value);
+        }
+
+        public bool IsScrollEnabled
+        {
+            get => this.isScrollEnabled;
+            set => this.SetProperty(ref this.isScrollEnabled, value);
+        }
+
+        public bool IsZoomEnabled
+        {
+            get => this.isZoomEnabled;
+            set => this.SetProperty(ref this.isZoomEnabled, value);
+        }
+
         public IRelayCommand<ToggledEventArgs> IsShowingUserToggledCommand
         {
             get => this.isShowingUserToggledCommand ??= new RelayCommand<ToggledEventArgs>(this.IsShowingUserToggled);
@@ -169,19 +194,57 @@ namespace MapsDemoApp.ViewModels
         public Distance ZoomLevel
         {
             get => this.zoomLevel;
-            set => this.SetProperty(ref this.zoomLevel, value);
+            set
+            {
+                var newValue = value;
+
+                this.zoomLevelDebouncer.RunWithDelay(ZoomLevelDebounceDelay, () =>
+                {
+                    this.SetProperty(ref this.zoomLevel, newValue);
+                });
+            }
         }
 
-        public MapSpan MapSpan
+        public MapSpan VisibleRegion
         {
-            get => this.mapSpan;
-            set => this.SetProperty(ref this.mapSpan, value);
+            get => this.visibleRegion;
+            set => this.SetProperty(ref this.visibleRegion, value);
+        }
+
+        public MapType[] MapTypes
+        {
+            get => this.mapTypes;
+            private set => this.SetProperty(ref this.mapTypes, value);
+        }
+
+        public MapType MapType
+        {
+            get => this.mapType;
+            set => this.SetProperty(ref this.mapType, value);
         }
 
         public ObservableCollection<MapElement> MapElements
         {
             get => this.mapElements;
             private set => this.SetProperty(ref this.mapElements, value);
+        }
+
+        public LocationViewModel[] Locations
+        {
+            get => this.locations;
+            private set => this.SetProperty(ref this.locations, value);
+        }
+
+        public LocationViewModel SelectedLocation
+        {
+            get => this.selectedLocation;
+            set
+            {
+                if (this.SetProperty(ref this.selectedLocation, value))
+                {
+                    this.VisibleRegion = MapSpan.FromCenterAndRadius(value.Location, Distance.FromKilometers(300));
+                }
+            }
         }
 
         public Location CurrentPosition
@@ -204,7 +267,7 @@ namespace MapsDemoApp.ViewModels
                 var request = new GeolocationRequest(GeolocationAccuracy.Best, timeout: TimeSpan.FromSeconds(5));
                 var currentLocation = await this.geolocation.GetLocationAsync(request);
                 this.CurrentPosition = currentLocation;
-                this.MapSpan = MapSpan.FromCenterAndRadius(currentLocation!, Distance.FromKilometers(3));
+                this.VisibleRegion = MapSpan.FromCenterAndRadius(currentLocation!, Distance.FromKilometers(3));
             }
             catch (PermissionException e)
             {
@@ -214,6 +277,30 @@ namespace MapsDemoApp.ViewModels
             catch (Exception e)
             {
                 this.logger.LogError(e, "GetCurrentPositionAsync failed with exception");
+            }
+        }
+
+        public IAsyncRelayCommand LoadPinsCommand
+        {
+            get => this.loadPinsCommand ??= new AsyncRelayCommand(this.LoadPinsAsync);
+        }
+
+        private async Task LoadPinsAsync()
+        {
+            try
+            {
+                var parkingLots = await this.parkingLotService.GetAllAsync();
+
+                var parkingLotViewModels = parkingLots
+                    .Select(p => new ParkingLotViewModel(this.toastService, p.Name, p.Location))
+                    .OrderBy(p => p.Name)
+                    .ToObservableCollection();
+
+                this.ParkingLots = parkingLotViewModels;
+            }
+            catch (Exception e)
+            {
+                this.logger.LogError(e, "LoadPinsAsync failed with exception");
             }
         }
 

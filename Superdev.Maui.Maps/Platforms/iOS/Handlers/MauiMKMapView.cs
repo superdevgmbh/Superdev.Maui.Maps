@@ -14,23 +14,37 @@ using Map = Superdev.Maui.Maps.Controls.Map;
 
 namespace Superdev.Maui.Maps.Platforms.Handlers
 {
-    public class MauiMKMapView : MKMapView
+    public class MapView : UIView
     {
         private readonly WeakReference<MapHandler> handlerRef;
+        private MauiMKMapView mapView;
+        private bool fullyRendered;
+        private bool disposed;
         private UITapGestureRecognizer mapClickedGestureRecognizer;
 
-        public MauiMKMapView(MapHandler handler)
+        public MapView(MapHandler mapHandler)
         {
-            this.handlerRef = new WeakReference<MapHandler>(handler);
-
-            this.Delegate = new MapViewDelegateImpl();
+            this.handlerRef = new WeakReference<MapHandler>(mapHandler);
         }
 
-        public new MapViewDelegateImpl Delegate
+        public MKMapView CreateMap()
         {
-            get => (MapViewDelegateImpl)base.Delegate;
-            init => base.Delegate = value;
+            if (this.disposed)
+            {
+                return null;
+            }
+
+            if (this.mapView is null)
+            {
+                this.mapView = new MauiMKMapView();
+                this.mapView.AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight;
+                this.AddSubview(this.mapView);
+            }
+
+            return this.mapView;
         }
+
+        public MauiMKMapView Map => this.mapView;
 
         public override void MovedToWindow()
         {
@@ -74,15 +88,15 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         internal void RemoveAllAnnotations()
         {
-            if (this.Annotations?.Length > 0)
+            if (this.Map.Annotations?.Length > 0)
             {
-                this.RemoveAnnotations(this.Annotations);
+                this.Map.RemoveAnnotations(this.Map.Annotations);
             }
         }
 
         internal void AddPins(IList pins)
         {
-            Trace.WriteLine($"AddPins: pins={pins.Count}");
+            var stopwatch = Stopwatch.StartNew();
 
             this.handlerRef.TryGetTarget(out var handler);
             if (handler?.MauiContext is not IMauiContext mauiContext)
@@ -112,23 +126,25 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                     }
 
                     pin.MarkerId = annotation;
-                    this.AddAnnotation(annotation);
+                    this.Map.AddAnnotation(annotation);
                 }
             }
+
+            Trace.WriteLine($"AddPins with pins={pins.Count} finished in {stopwatch.ElapsedMilliseconds}ms");
         }
 
         internal void ClearMapElements()
         {
-            var elements = this.Overlays;
+            var overlays = this.Map.Overlays;
 
-            if (elements == null)
+            if (overlays == null)
             {
                 return;
             }
 
-            foreach (var overlay in elements)
+            foreach (var overlay in overlays)
             {
-                this.RemoveOverlay(overlay);
+                this.Map.RemoveOverlay(overlay);
             }
         }
 
@@ -164,7 +180,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                 if (overlay != null)
                 {
                     element.MapElementId = overlay;
-                    this.AddOverlay(overlay);
+                    this.Map.AddOverlay(overlay);
                 }
             }
         }
@@ -175,16 +191,17 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             {
                 if (element.MapElementId is IMKOverlay overlay)
                 {
-                    this.RemoveOverlay(overlay);
+                    this.Map.RemoveOverlay(overlay);
                 }
             }
         }
 
         private void Startup()
         {
-            var mapDelegate = this.Delegate;
+            var mapDelegate = this.Map.Delegate;
             mapDelegate.RendererForOverlayDelegate += this.GetViewForOverlayDelegate;
             mapDelegate.RegionDidChangeAnimatedDelegate += this.OnRegionDidChangeAnimated;
+            mapDelegate.DidFinishRenderingMapDelegate += this.OnDidFinishRenderingMap;
             mapDelegate.DidSelectAnnotationViewDelegate += this.OnAnnotationViewSelected;
 
             this.AddGestureRecognizer(this.mapClickedGestureRecognizer = new UITapGestureRecognizer(OnMapClicked)
@@ -202,9 +219,10 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                 this.mapClickedGestureRecognizer = null;
             }
 
-            var mapDelegate = this.Delegate;
+            var mapDelegate = this.Map.Delegate;
             mapDelegate.RendererForOverlayDelegate -= this.GetViewForOverlayDelegate;
             mapDelegate.RegionDidChangeAnimatedDelegate -= this.OnRegionDidChangeAnimated;
+            mapDelegate.DidFinishRenderingMapDelegate -= this.OnDidFinishRenderingMap;
             mapDelegate.DidSelectAnnotationViewDelegate -= this.OnAnnotationViewSelected;
         }
 
@@ -226,32 +244,27 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
             if (deselect)
             {
-                this.DeselectAnnotation(annotation, false);
+                this.Map.DeselectAnnotation(annotation, false);
             }
+        }
+
+        private void OnDidFinishRenderingMap(MKMapView mapView, bool fullyRendered)
+        {
+            this.fullyRendered = fullyRendered;
         }
 
         private void OnRegionDidChangeAnimated(MKMapView mapView, bool animated)
         {
-            if (this.handlerRef.TryGetTarget(out var handler) && handler?.VirtualView != null)
+            if (!this.fullyRendered)
             {
-                IMap map = handler.VirtualView;
-                var regionCenter = mapView.Region.Center;
-                var regionSpan = mapView.Region.Span;
-                var location = new Location(regionCenter.Latitude, regionCenter.Longitude);
-                map.VisibleRegion = new MapSpan(location, regionSpan.LatitudeDelta, regionSpan.LongitudeDelta);
-
-                // TODO: Refactor this!!
-                if (map is Map customMap)
-                {
-                    customMap.MapSpan = map.VisibleRegion;
-                }
+                return;
             }
-        }
 
-        public IMKAnnotation GetAnnotationForPin(Pin pin)
-        {
-            var annotation = this.Annotations.SingleOrDefault(a => pin?.MarkerId as IMKAnnotation == a);
-            return annotation;
+            if (this.handlerRef.TryGetTarget(out var handler) && handler?.VirtualView is Map map)
+            {
+                var visibleRegion = mapView.Region.ToMapSpan();
+                map.SetVisibleRegion(visibleRegion);
+            }
         }
 
         private T GetMapElement<T>(IMKOverlay mkPolyline) where T : MKOverlayRenderer
@@ -269,7 +282,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                 }
             }
 
-            //Make sure we Disconnect old handler we don't want to reuse that one
+            // Make sure we Disconnect old handler we don't want to reuse that one
             mapElement?.Handler?.DisconnectHandler();
             return mapElement?.ToHandler(handler?.MauiContext!).PlatformView as T;
         }
@@ -286,20 +299,60 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         private static void OnMapClicked(UITapGestureRecognizer recognizer)
         {
-            if (recognizer.View is not MauiMKMapView mauiMkMapView)
+            if (recognizer.View is not MapView mapView)
             {
                 return;
             }
 
-            var tapPoint = recognizer.LocationInView(mauiMkMapView);
-            var tapGPS = mauiMkMapView.ConvertPoint(tapPoint, mauiMkMapView);
+            var tapPoint = recognizer.LocationInView(mapView);
+            var tapGPS = mapView.Map.ConvertPoint(tapPoint, mapView);
 
-            if (mauiMkMapView.handlerRef.TryGetTarget(out var handler))
+            if (mapView.handlerRef.TryGetTarget(out var handler))
             {
                 IMap map = handler?.VirtualView;
                 map?.Clicked(new Location(tapGPS.Latitude, tapGPS.Longitude));
             }
         }
 
+        public void DisposeMap()
+        {
+            if (this.mapView is not null)
+            {
+                this.mapView.RemoveFromSuperview();
+                this.mapView.Dispose();
+                this.mapView = null;
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (this.disposed)
+            {
+                return;
+            }
+
+            this.disposed = true;
+
+            if (disposing)
+            {
+                this.DisposeMap();
+            }
+
+            base.Dispose(disposing);
+        }
+    }
+
+    public class MauiMKMapView : MKMapView
+    {
+        public MauiMKMapView()
+        {
+            this.Delegate = new MapViewDelegateImpl();
+        }
+
+        public new MapViewDelegateImpl Delegate
+        {
+            get => (MapViewDelegateImpl)base.Delegate;
+            init => base.Delegate = value;
+        }
     }
 }

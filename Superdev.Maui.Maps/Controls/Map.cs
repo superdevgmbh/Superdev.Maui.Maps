@@ -1,12 +1,11 @@
 using System.Collections;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Maps;
 using Superdev.Maui.Maps.Extensions;
+using Superdev.Maui.Maps.Utils;
 using IMap = Microsoft.Maui.Maps.IMap;
 
 namespace Superdev.Maui.Maps.Controls
@@ -16,33 +15,32 @@ namespace Superdev.Maui.Maps.Controls
     /// </summary>
     public class Map : View, IMap, IEnumerable<IMapPin>
     {
-        public static readonly Location DefaultCenterPosition = new Location(0.0d, 10.0d);
-        public static readonly Distance DefaultZoomLevel = Distance.FromKilometers(20000d);
-        public static readonly MapSpan DefaultMapSpan = MapSpan.FromCenterAndRadius(DefaultCenterPosition, DefaultZoomLevel);
+        public static readonly Location DefaultCenter = new Location(0.0d, 10.0d);
+        public static readonly Distance DefaultZoomLevel = Distance.FromKilometers(20015d);
+        public static readonly MapSpan DefaultVisibleRegion = MapSpan.FromCenterAndRadius(DefaultCenter, DefaultZoomLevel);
 
-        private readonly ObservableCollection<Pin> pins = new();
-        private MapSpan visibleRegion;
-        private MapSpan lastMoveToRegion;
+        private readonly ObservableRangeCollection<Pin> pins = new();
+        private readonly Queue<MapMoveRequest> moveRequests = new();
+        private MapMoveRequest lastMoveRequest;
+        private bool shouldMoveToRegion = true;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Map"/> class with a region.
         /// </summary>
         // <remarks>The selected region will default to Maui, Hawaii.</remarks>
         public Map()
-            : this(DefaultMapSpan)
+            : this(DefaultVisibleRegion)
         {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Map"/> class with a region.
         /// </summary>
-        /// <param name="region">The region that should be initially shown by the map.</param>
-        public Map(MapSpan region)
+        /// <param name="visibleRegion">The region that should be initially shown by the map.</param>
+        public Map(MapSpan visibleRegion)
         {
-            this.MoveToRegion(region);
+            this.MoveToRegion(visibleRegion, animated: false);
             this.VerticalOptions = this.HorizontalOptions = LayoutOptions.Fill;
-
-            this.pins.CollectionChanged += this.PinsOnCollectionChanged; // TODO: Unsubscribe!!
         }
 
         public static readonly BindableProperty IsScrollEnabledProperty = BindableProperty.Create(
@@ -145,15 +143,15 @@ namespace Superdev.Maui.Maps.Controls
 
         private static void OnCenterPositionPropertyChanged(BindableObject bindable, object oldValue, object newValue)
         {
-            if (newValue is not Location centerPosition)
+            if (newValue is not Location center)
             {
                 return;
             }
 
-            if (!centerPosition.IsUnknown())
+            if (!center.IsUnknown())
             {
                 var map = (Map)bindable;
-                var mapSpan = centerPosition.GetMapSpan(map.ZoomLevel);
+                var mapSpan = MapSpan.FromCenterAndRadius(center, map.ZoomLevel);
                 map.MoveToRegion(mapSpan);
             }
         }
@@ -164,40 +162,54 @@ namespace Superdev.Maui.Maps.Controls
             set => this.SetValue(CenterPositionProperty, value);
         }
 
-        public static readonly BindableProperty MapSpanProperty = BindableProperty.Create(
-            nameof(MapSpan),
-            typeof(MapSpan), typeof(Map),
+        public static readonly BindableProperty VisibleRegionProperty = BindableProperty.Create(
+            nameof(VisibleRegion),
+            typeof(MapSpan), // TODO: MapMoveRequest
+            typeof(Map),
             null,
             BindingMode.TwoWay,
-            propertyChanged: OnMapSpanPropertyChanged);
+            propertyChanged: OnVisibleRegionPropertyChanged);
 
-        private static void OnMapSpanPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+        private static void OnVisibleRegionPropertyChanged(BindableObject bindable, object oldValue, object newValue)
         {
-            var mapSpan = newValue as MapSpan;
-            if (mapSpan == null)
+            if (newValue is not MapSpan newVisibleRegion)
             {
                 return;
             }
 
             var map = (Map)bindable;
-            map.MoveToRegion(mapSpan);
+            map.MoveToRegion(newVisibleRegion);
         }
 
-        public MapSpan MapSpan
+        /// <summary>
+        /// Gets the currently visible region of the map.
+        /// </summary>
+        public MapSpan VisibleRegion
         {
-            get => (MapSpan)this.GetValue(MapSpanProperty);
-            set => this.SetValue(MapSpanProperty, value);
+            get => (MapSpan)this.GetValue(VisibleRegionProperty);
+            set => this.SetValue(VisibleRegionProperty, value);
         }
 
-        public static readonly BindableProperty ZoomLevelProperty =
-            BindableProperty.Create(
-                nameof(ZoomLevel),
-                typeof(Distance),
-                typeof(Map),
-                default(Distance),
-                BindingMode.TwoWay,
-                null,
-                OnZoomLevelPropertyChanged);
+        internal void SetVisibleRegion(MapSpan visibleRegion)
+        {
+            this.shouldMoveToRegion = false;
+            this.VisibleRegion = visibleRegion;
+            this.ZoomLevel = visibleRegion.Radius;
+            this.shouldMoveToRegion = true;
+        }
+
+        public static readonly BindableProperty ZoomLevelProperty = BindableProperty.Create(
+            nameof(ZoomLevel),
+            typeof(Distance),
+            typeof(Map),
+            default(Distance),
+            BindingMode.TwoWay,
+            coerceValue: (_, v) =>
+            {
+                var zoomLevel = (Distance)v;
+                return Distance.FromMeters(Math.Truncate(zoomLevel.Meters));
+            },
+            propertyChanged: OnZoomLevelPropertyChanged);
 
         private static void OnZoomLevelPropertyChanged(BindableObject bindable, object oldValue, object newValue)
         {
@@ -208,14 +220,17 @@ namespace Superdev.Maui.Maps.Controls
             }
 
             var map = (Map)bindable;
-            var centerPosition = map.MapSpan?.Center ?? map.CenterPosition;
-            if (!centerPosition.IsUnknown())
+            var center = map.VisibleRegion?.Center ?? map.CenterPosition;
+            if (!center.IsUnknown())
             {
-                var mapSpan = centerPosition.GetMapSpan(distance);
+                var mapSpan = MapSpan.FromCenterAndRadius(center, distance);
                 map.MoveToRegion(mapSpan);
             }
         }
 
+        /// <summary>
+        /// The current zoom radius in <see cref="Distance"/>.
+        /// </summary>
         public Distance ZoomLevel
         {
             get => (Distance)this.GetValue(ZoomLevelProperty);
@@ -233,28 +248,50 @@ namespace Superdev.Maui.Maps.Controls
             typeof(Map),
             propertyChanged: (b, o, n) => ((Map)b).OnItemsSourcePropertyChanged((IEnumerable)o, (IEnumerable)n));
 
-        private void OnItemsSourcePropertyChanged(IEnumerable oldItemsSource, IEnumerable newItemsSource)
+        private async void OnItemsSourcePropertyChanged(IEnumerable oldItemsSource, IEnumerable newItemsSource)
         {
-            if (oldItemsSource is INotifyCollectionChanged oldNcc)
+            if (oldItemsSource is INotifyCollectionChanged ncc)
             {
-                oldNcc.CollectionChanged -= this.OnItemsSourceCollectionChanged;
+                ncc.CollectionChanged -= this.OnItemsSourceCollectionChanged;
             }
 
-            if (newItemsSource is INotifyCollectionChanged newNcc)
+            if (newItemsSource is INotifyCollectionChanged ncc1)
             {
-                newNcc.CollectionChanged += this.OnItemsSourceCollectionChanged;
+                ncc1.CollectionChanged += this.OnItemsSourceCollectionChanged;
             }
 
-            this.pins.Clear();
-            this.CreatePinItems();
+            var pins = await Task.Run(() => this.CreatePins(newItemsSource).ToArray());
+            this.pins.ReplaceRange(pins);
+            this.Handler?.UpdateValue(nameof(IMap.Pins));
         }
 
         private void OnItemsSourceCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            e.Apply(
-                (item, _, __) => this.CreatePin(item),
-                (item, _) => this.RemovePin(item),
-                () => this.pins.Clear());
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    var newPinsToAdd = this.CreatePins(e.NewItems);
+                    this.pins.AddRange(newPinsToAdd);
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    var itemsToRemove1 = (e.OldItems?.Cast<object>() ?? Enumerable.Empty<object>())
+                        .Join(this.pins, i => i, p => p.BindingContext, (_, p) => p)
+                        .ToList();
+                    this.pins.RemoveRange(itemsToRemove1, NotifyCollectionChangedAction.Remove);
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    var itemsToRemove2 = (e.OldItems?.Cast<object>() ?? Enumerable.Empty<object>())
+                        .Join(this.pins, i => i, p => p.BindingContext, (_, p) => p)
+                        .ToList();
+                    var pinsToReplace = this.CreatePins(e.NewItems);
+                    this.pins.RemoveRange(itemsToRemove2, NotifyCollectionChangedAction.Remove);
+                    this.pins.AddRange(pinsToReplace);
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    var newPins = this.CreatePins();
+                    this.pins.ReplaceRange(newPins);
+                    break;
+            }
 
             this.Handler?.UpdateValue(nameof(IMap.Pins));
         }
@@ -286,6 +323,20 @@ namespace Superdev.Maui.Maps.Controls
             typeof(Map),
             propertyChanged: (b, o, n) => ((Map)b).OnItemTemplatePropertyChanged((DataTemplate)o, (DataTemplate)n));
 
+        private void OnItemTemplatePropertyChanged(DataTemplate oldItemTemplate, DataTemplate newItemTemplate)
+        {
+            if (newItemTemplate is DataTemplateSelector)
+            {
+                throw new NotSupportedException(
+                    $"The {nameof(Map)}.{ItemTemplateProperty.PropertyName} property only supports {nameof(DataTemplate)}." +
+                    $" Set the {nameof(Map)}.{ItemTemplateSelectorProperty.PropertyName} property instead to use a {nameof(DataTemplateSelector)}");
+            }
+
+            var pins = this.CreatePins(this.ItemsSource);
+            this.pins.ReplaceRange(pins);
+            this.Handler?.UpdateValue(nameof(IMap.Pins));
+        }
+
         /// <summary>
         /// Gets or sets the template that is to be applied to each object in <see cref="ItemsSource"/>.
         /// </summary>
@@ -299,7 +350,14 @@ namespace Superdev.Maui.Maps.Controls
             nameof(ItemTemplateSelector),
             typeof(DataTemplateSelector),
             typeof(Map),
-            propertyChanged: (b, o, n) => ((Map)b).OnItemTemplateSelectorPropertyChanged());
+            propertyChanged: (b, _, _) => ((Map)b).OnItemTemplateSelectorPropertyChanged());
+
+        private void OnItemTemplateSelectorPropertyChanged()
+        {
+            var pins = this.CreatePins(this.ItemsSource);
+            this.pins.ReplaceRange(pins);
+            this.Handler?.UpdateValue(nameof(IMap.Pins));
+        }
 
         /// <summary>
         /// Gets or sets the object that selects the template that is to be applied to each object in <see cref="ItemsSource"/>.
@@ -386,11 +444,6 @@ namespace Superdev.Maui.Maps.Controls
         public event EventHandler<MapClickedEventArgs> MapClicked;
 
         /// <summary>
-        /// Gets the currently visible region of the map.
-        /// </summary>
-        public MapSpan? VisibleRegion => this.visibleRegion;
-
-        /// <summary>
         /// Returns an enumerator of all the pins that are currently added to the map.
         /// </summary>
         /// <returns>An instance of <see cref="IEnumerator{IMapPin}"/>.</returns>
@@ -402,12 +455,65 @@ namespace Superdev.Maui.Maps.Controls
         /// <summary>
         /// Adjusts the viewport of the map control to view the specified region.
         /// </summary>
-        /// <param name="mapSpan">A <see cref="MapSpan"/> object containing details on what region should be shown.</param>
+        /// <param name="mapSpan">A <see cref="VisibleRegion"/> object containing details on what region should be shown.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="mapSpan"/> is <see langword="null"/>.</exception>
         public void MoveToRegion(MapSpan mapSpan)
         {
-            this.lastMoveToRegion = mapSpan ?? throw new ArgumentNullException(nameof(mapSpan));
-            this.Handler?.Invoke(nameof(IMap.MoveToRegion), mapSpan);
+            this.MoveToRegion(mapSpan, animated: true);
+        }
+
+        /// <summary>
+        /// Adjusts the viewport of the map control to view the specified region.
+        /// </summary>
+        /// <param name="mapSpan">A <see cref="VisibleRegion"/> object containing details on what region should be shown.</param>
+        /// <param name="animated">Enables or disables the animation effect.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="mapSpan"/> is <see langword="null"/>.</exception>
+        public void MoveToRegion(MapSpan mapSpan, bool animated)
+        {
+            if (!this.shouldMoveToRegion)
+            {
+                return;
+            }
+
+            this.moveRequests.Enqueue(new MapMoveRequest(mapSpan, animated));
+            _ = this.ProcessMoveQueueAsync();
+        }
+
+        private async Task ProcessMoveQueueAsync()
+        {
+            try
+            {
+                while (this.moveRequests.TryDequeue(out var next))
+                {
+                    Debug.WriteLine($"ProcessMoveQueueAsync: {Environment.NewLine}" +
+                                    $"> next.MapSpan{Environment.NewLine}" +
+                                    $"       > Latitude: {next.MapSpan.Center.Latitude:F6}{Environment.NewLine}" +
+                                    $"       > Longitude: {next.MapSpan.Center.Longitude:F6}{Environment.NewLine}" +
+                                    $"       > LongitudeDegrees: {next.MapSpan.LongitudeDegrees:F8}{Environment.NewLine}" +
+                                    $"       > LatitudeDegrees: {next.MapSpan.LatitudeDegrees:F8}{Environment.NewLine}" +
+                                    $"       > Radius: {next.MapSpan.Radius.Kilometers:F2} km{Environment.NewLine}" +
+                                    $"> next.Animated={next.Animated}");
+                    this.MoveToRegionInternal(next);
+
+                    var delay = next.Animated ? TimeSpan.FromMilliseconds(1000) : TimeSpan.FromMilliseconds(500);
+                    await Task.Delay(delay);
+                }
+            }
+            catch (Exception)
+            {
+                // Ignore
+            }
+        }
+
+        private void MoveToRegionInternal(MapMoveRequest moveRequest)
+        {
+            this.lastMoveRequest = moveRequest;
+
+            if (this.Handler is IViewHandler handler && moveRequest != null)
+            {
+                handler.Invoke(nameof(IMap.MoveToRegion), moveRequest);
+                this.lastMoveRequest = null;
+            }
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -415,62 +521,25 @@ namespace Superdev.Maui.Maps.Controls
             return this.GetEnumerator();
         }
 
-        private void SetVisibleRegion(MapSpan visibleRegion)
+        private IEnumerable<Pin> CreatePins()
         {
-            ArgumentNullException.ThrowIfNull(visibleRegion);
+            return this.CreatePins(this.ItemsSource);
+        }
 
-            if (this.visibleRegion == visibleRegion)
+        private IEnumerable<Pin> CreatePins(IEnumerable source)
+        {
+            if (this.ItemsSource == null || (this.ItemTemplate == null && this.ItemTemplateSelector == null))
             {
-                return;
+                return Enumerable.Empty<Pin>();
             }
 
-            this.OnPropertyChanging(nameof(this.VisibleRegion));
-            this.visibleRegion = visibleRegion;
-            this.OnPropertyChanged(nameof(this.VisibleRegion));
-        }
-
-        private void PinsOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            this.Handler?.UpdateValue(nameof(IMap.Pins));
-        }
-
-        private void OnItemTemplatePropertyChanged(DataTemplate oldItemTemplate, DataTemplate newItemTemplate)
-        {
-            if (newItemTemplate is DataTemplateSelector)
-            {
-                throw new NotSupportedException(
-                    $"The {nameof(Map)}.{ItemTemplateProperty.PropertyName} property only supports {nameof(DataTemplate)}." +
-                    $" Set the {nameof(Map)}.{ItemTemplateSelectorProperty.PropertyName} property instead to use a {nameof(DataTemplateSelector)}");
-            }
-
-            this.pins.Clear();
-            this.CreatePinItems();
-        }
-
-        private void OnItemTemplateSelectorPropertyChanged()
-        {
-            this.pins.Clear();
-            this.CreatePinItems();
-        }
-
-        private void CreatePinItems()
-        {
-            if (this.ItemsSource is null || (this.ItemTemplate is null && this.ItemTemplateSelector is null))
-            {
-                return;
-            }
-
-            foreach (var item in this.ItemsSource)
-            {
-                this.CreatePin(item);
-            }
-
-            this.Handler?.UpdateValue(nameof(IMap.Pins));
-        }
-
-        private void CreatePin(object newItem)
-        {
             var itemTemplate = this.ItemTemplate;
+            var pins = source.Cast<object>().Select(p => this.CreatePin(p, itemTemplate));
+            return pins;
+        }
+
+        private Pin CreatePin(object newItem, DataTemplate itemTemplate)
+        {
             if (itemTemplate is null)
             {
                 itemTemplate = this.ItemTemplateSelector?.SelectTemplate(newItem, this);
@@ -478,30 +547,13 @@ namespace Superdev.Maui.Maps.Controls
 
             if (itemTemplate is null)
             {
-                return;
+                return null;
             }
 
             var pin = (Pin)itemTemplate.CreateContent();
             pin.Map = new WeakReference<Map>(this);
             pin.BindingContext = newItem;
-            this.pins.Add(pin);
-        }
-
-        private void RemovePin(object itemToRemove)
-        {
-            //// Instead of just removing by item (i.e. _pins.Remove(pinToRemove))
-            ////  we need to remove by index because of how Pin.Equals() works
-            for (var i = 0; i < this.pins.Count; ++i)
-            {
-                var pin = this.pins[i] as Pin;
-                if (pin is not null)
-                {
-                    if (pin.BindingContext?.Equals(itemToRemove) == true)
-                    {
-                        this.pins.RemoveAt(i);
-                    }
-                }
-            }
+            return pin;
         }
 
         IList<IMapElement> IMap.Elements
@@ -516,11 +568,6 @@ namespace Superdev.Maui.Maps.Controls
             this.MapClicked?.Invoke(this, new MapClickedEventArgs(location));
         }
 
-        MapSpan? IMap.VisibleRegion
-        {
-            get => this.visibleRegion;
-            set => this.SetVisibleRegion(value);
-        }
 
         /// <summary>
         /// Raised when the handler for this map control changed.
@@ -528,8 +575,9 @@ namespace Superdev.Maui.Maps.Controls
         protected override void OnHandlerChanged()
         {
             base.OnHandlerChanged();
-            //The user specified on the ctor a MapSpan we now need the handler to move to that region
-            this.Handler?.Invoke(nameof(IMap.MoveToRegion), this.lastMoveToRegion);
+
+            // The user specified on the ctor a MapSpan we now need the handler to move to that region
+            this.MoveToRegionInternal(this.lastMoveRequest);
         }
     }
 }

@@ -17,8 +17,6 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             [nameof(Pin.IsSelected)] = MapIsSelected
         };
 
-        private WeakReference<MKMapView> mapViewRef;
-
         public MapPinHandler()
             : base(Mapper)
         {
@@ -43,7 +41,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                 if (pin.MarkerId is IMKAnnotation annotation)
                 {
                     var mapView = mapHandler.PlatformView;
-                    var annotationView = mapView.ViewForAnnotation(annotation);
+                    var annotationView = mapView.Map.ViewForAnnotation(annotation);
                     if (annotationView != null)
                     {
                         if (pin.ImageSource is ImageSource imageSource && this.MauiContext is MauiContext mauiContext)
