@@ -30,11 +30,10 @@ namespace Superdev.Maui.Maps
                 .ConfigureLifecycleEvents(events =>
                 {
 #if ANDROID
-                    // Log everything in this one
                     events.AddAndroid(android => android
                         .OnCreate((a, b) =>
                         {
-                            Microsoft.Maui.Maps.Handlers.MapHandler.Bundle = b;
+                            Superdev.Maui.Maps.Platforms.Handlers.MapHandler.Bundle = b;
                             if (GoogleApiAvailability.Instance.IsGooglePlayServicesAvailable(a) == ConnectionResult.Success)
                             {
                                 try
@@ -66,11 +65,8 @@ namespace Superdev.Maui.Maps
         {
 #if (ANDROID || IOS)
             handlers.AddHandler<Microsoft.Maui.Controls.Maps.Map, Microsoft.Maui.Maps.Handlers.MapHandler>();
-
-#if IOS // TODO: Rename CustomMapHandler to MapHandler
             handlers.AddHandler<Superdev.Maui.Maps.Controls.Map, Superdev.Maui.Maps.Platforms.Handlers.MapHandler>();
 
-#endif
             handlers.AddHandler<Microsoft.Maui.Controls.Maps.Pin, Microsoft.Maui.Maps.Handlers.MapPinHandler>();
             handlers.AddHandler<Superdev.Maui.Maps.Controls.Pin, Platforms.Handlers.MapPinHandler>();
 

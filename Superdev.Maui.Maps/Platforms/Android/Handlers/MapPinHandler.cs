@@ -26,14 +26,34 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         private static void MapImageSource(MapPinHandler mapPinHandler, Pin pin)
         {
-            mapPinHandler.UpdateImageSource(pin);
+            mapPinHandler.UpdateAnnotation(mapPinHandler, pin);
         }
 
-        private void UpdateImageSource(Pin pin)
+        private void UpdateAnnotation(MapPinHandler _, Pin pin)
         {
-            if (pin.Map.TryGetTarget(out var map) && map.Handler is CustomMapHandler customMapHandler)
+            if (this.MauiContext is not MauiContext mauiContext)
             {
-                customMapHandler.RefreshPin(pin);
+                return;
+            }
+
+            if (pin.Map.TryGetTarget(out var map) && map.Handler is MapHandler mapHandler)
+            {
+                if (pin.MarkerId is not string markerId)
+                {
+                    return;
+                }
+
+                var marker = mapHandler.markers.FirstOrDefault(m => m.Id == markerId);
+
+                if (pin.ImageSource is ImageSource imageSource)
+                {
+                    var image = MapHandler.ImageCache.GetImage(imageSource, mauiContext);
+                    marker.SetIcon(image);
+                }
+                else
+                {
+                    marker.SetIcon(null);
+                }
             }
         }
 

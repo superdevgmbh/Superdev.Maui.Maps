@@ -4,7 +4,7 @@ using UIKit;
 
 namespace Superdev.Maui.Maps.Platforms.Handlers
 {
-    public class CustomPinAnnotation : MKPointAnnotation
+    internal class CustomPinAnnotation : MKPointAnnotation
     {
         public required Pin Pin { get; init; }
 

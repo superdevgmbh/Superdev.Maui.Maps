@@ -253,3 +253,5 @@ paket-files/
 *.bak
 *.p8
 *.p12
+
+**/Platforms/Android/Resources/values/secrets.xml

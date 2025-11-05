@@ -43,6 +43,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             [nameof(IMapHandler.UpdateMapElement)] = MapUpdateMapElement,
         };
 
+        internal static readonly ImageCache ImageCache = new ImageCache();
         private static readonly Lazy<CLLocationManager> LazyLocationManager = new Lazy<CLLocationManager>(() => new CLLocationManager());
         public static CLLocationManager LocationManager => LazyLocationManager.Value;
 
@@ -67,14 +68,16 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
 		protected override void ConnectHandler(MapView platformView)
 		{
-            var stopwatch = Stopwatch.StartNew();
+            base.ConnectHandler(platformView);
+
             platformView.CreateMap();
-            Trace.WriteLine($"ConnectHandler finished in {stopwatch.ElapsedMilliseconds}ms");
             platformView.Map.Delegate.GetViewForAnnotationDelegate += this.GetViewForAnnotations;
         }
 
         protected override void DisconnectHandler(MapView platformView)
 		{
+            base.DisconnectHandler(platformView);
+
             platformView.Map.Delegate.GetViewForAnnotationDelegate -= this.GetViewForAnnotations;
             platformView.DisposeMap();
 
@@ -308,7 +311,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         private static void MapSelectedItem(MapHandler mapHandler, Map map)
         {
-            Trace.WriteLine("MapSelectedItem");
+            Debug.WriteLine("MapSelectedItem");
 
             var selectedPins = map.Pins
                 .Where(p => p.IsSelected)

@@ -112,7 +112,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
                     if (pin.ImageSource is ImageSource imageSource)
                     {
-                        var image = ImageCache.GetImage(imageSource, mauiContext);
+                        var image = MapHandler.ImageCache.GetImage(imageSource, mauiContext);
 
                         // TODO: Check if we can use CustomPinAnnotation for all kind of pins
                         annotation = new CustomPinAnnotation

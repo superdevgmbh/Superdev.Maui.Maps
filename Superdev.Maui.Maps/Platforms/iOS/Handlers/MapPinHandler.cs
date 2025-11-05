@@ -1,9 +1,5 @@
 using MapKit;
-using Microsoft.Maui.Maps.Handlers;
 using Superdev.Maui.Maps.Controls;
-using UIKit;
-using Superdev.Maui.Maps.Platforms.Extensions;
-using Superdev.Maui.Maps.Platforms.Utils;
 
 namespace Superdev.Maui.Maps.Platforms.Handlers
 {
@@ -46,7 +42,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                     {
                         if (pin.ImageSource is ImageSource imageSource && this.MauiContext is MauiContext mauiContext)
                         {
-                            var image = ImageCache.GetImage(imageSource, mauiContext);
+                            var image = MapHandler.ImageCache.GetImage(imageSource, mauiContext);
                             annotationView.Image = image;
                         }
                         else
