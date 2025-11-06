@@ -160,15 +160,15 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             return annotationView;
         }
 
-        protected void AttachGestureToPin(MKAnnotationView mapPin, IMKAnnotation annotation)
+        private void AttachGestureToPin(MKAnnotationView annotationView, IMKAnnotation annotation)
         {
-            var recognizers = mapPin.GestureRecognizers;
+            var recognizers = annotationView.GestureRecognizers;
 
             if (recognizers != null)
             {
                 foreach (var r in recognizers)
                 {
-                    mapPin.RemoveGestureRecognizer(r);
+                    annotationView.RemoveGestureRecognizer(r);
                 }
             }
 
@@ -181,7 +181,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                 }
             };
 
-            mapPin.AddGestureRecognizer(recognizer);
+            annotationView.AddGestureRecognizer(recognizer);
         }
 
         // TODO: protected virtual?
