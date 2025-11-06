@@ -35,6 +35,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             [nameof(IMap.Pins)] = MapPins,
             [nameof(IMap.Elements)] = MapElements,
             [nameof(Map.SelectedItem)] = MapSelectedItem,
+            [nameof(Map.IsReadonly)] = MapIsReadonly,
         };
 
         public static CommandMapper<Map, MapHandler> CommandMapper = new(ViewHandler.ViewCommandMapper)
@@ -86,7 +87,6 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         private MKAnnotationView GetViewForAnnotations(MKMapView mapView, NSObject annotationObj)
         {
-            // var stopwatch = Stopwatch.StartNew();
             if (annotationObj == null)
             {
                 return null!;
@@ -132,10 +132,12 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                 }
             }
 
+            var map = this.VirtualView;
+            var annotationViewEnabled = map.IsReadonly;
+            annotationView.Enabled = !annotationViewEnabled;
             annotationView.Annotation = annotation;
             this.AttachGestureToPin(annotationView, annotation);
 
-            // Trace.WriteLine($"GetViewForAnnotations finished in {stopwatch.ElapsedMilliseconds}ms");
             return annotationView;
         }
 
@@ -344,6 +346,20 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                 if (selectedPin != null)
                 {
                     selectedPin.IsSelected = true;
+                }
+            }
+        }
+
+        private static void MapIsReadonly(MapHandler handler, Map map)
+        {
+            var annotationViewEnabled = !map.IsReadonly;
+            var mapView = handler.PlatformView;
+            foreach (var annotation in handler.PlatformView.Map.Annotations)
+            {
+                var annotationView = mapView.Map.ViewForAnnotation(annotation);
+                if (annotationView != null)
+                {
+                    annotationView.Enabled = annotationViewEnabled;
                 }
             }
         }
