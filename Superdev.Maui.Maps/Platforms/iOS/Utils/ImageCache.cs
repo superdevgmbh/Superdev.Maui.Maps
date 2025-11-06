@@ -1,5 +1,6 @@
 using Superdev.Maui.Maps.Utils;
 using UIKit;
+using ImageSourceExtensions = Superdev.Maui.Maps.Platforms.Extensions.ImageSourceExtensions;
 
 namespace Superdev.Maui.Maps.Platforms.Utils
 {
@@ -7,7 +8,7 @@ namespace Superdev.Maui.Maps.Platforms.Utils
     {
         protected override UIImage LoadImage(ImageSource imageSource, IMauiContext mauiContext)
         {
-            return Superdev.Maui.Maps.Platforms.Extensions.ImageSourceExtensions.LoadImage(imageSource, mauiContext);
+            return ImageSourceExtensions.LoadImage(imageSource, mauiContext);
         }
     }
 }

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui.Controls.Maps;
 using Superdev.Maui.Mvvm;
 using Superdev.Maui.Services;
 
@@ -12,7 +13,7 @@ namespace MapsDemoApp.ViewModels
 
         private Location location;
         private string name;
-        private IRelayCommand markerClickedCommand;
+        private IRelayCommand<PinClickedEventArgs> markerClickedCommand;
 
         public ParkingLotViewModel(
             IToastService toastService,
@@ -41,13 +42,14 @@ namespace MapsDemoApp.ViewModels
             get => DefaultAnchor;
         }
 
-        public IRelayCommand MarkerClickedCommand
+        public IRelayCommand<PinClickedEventArgs> MarkerClickedCommand
         {
-            get => this.markerClickedCommand ??= new RelayCommand(this.OnMarkerClicked);
+            get => this.markerClickedCommand ??= new RelayCommand<PinClickedEventArgs>(this.OnMarkerClicked);
         }
 
-        private void OnMarkerClicked()
+        private void OnMarkerClicked(PinClickedEventArgs eventArgs)
         {
+            eventArgs.HideInfoWindow = true;
             Trace.WriteLine($"OnMarkerClicked: {this.Name}");
         }
     }

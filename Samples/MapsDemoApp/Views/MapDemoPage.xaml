@@ -36,23 +36,18 @@
                 VisibleRegion="{Binding VisibleRegion}"
                 ZoomLevel="{Binding ZoomLevel}">
                 <!--  Default pin  -->
-                <!-- <m:Map.ItemTemplate> -->
-                <!--     <DataTemplate x:DataType="vm:ParkingLotViewModel"> -->
-                <!--    -->
-                <!--  ~1~  Minimal Pin  @1@  -->
-                <!--         <m:Pin Location="{Binding Location}" /> -->
-                <!--    -->
-                <!--  ~1~  Pin with Label and Address  @1@  -->
-                <!--  <m:Pin  -->
-                <!--  Address="Address"  -->
-                <!--  Label="{Binding Name}"  -->
-                <!--  Location="{Binding Location}" />  -->
-                <!--     </DataTemplate> -->
-                <!-- </m:Map.ItemTemplate> -->
-
-                <!--  Pin with ImageSource  -->
                 <m:Map.ItemTemplate>
                     <DataTemplate x:DataType="vm:ParkingLotViewModel">
+                        <!--  Pin with Location  -->
+                        <!-- <m:Pin Location="{Binding Location}" /> -->
+
+                        <!--  Pin with Location, Label and Address  -->
+                        <!--  <m:Pin  -->
+                        <!--  Address="Address"  -->
+                        <!--  Label="{Binding Name}"  -->
+                        <!--  Location="{Binding Location}" />  -->
+
+                        <!--  Pin with Location, Label, Address and ImageSource  -->
                         <m:Pin
                             Anchor="{Binding Anchor}"
                             ImageSource="{Binding Source={x:RelativeSource Self}, Path=IsSelected, Converter={StaticResource BoolToPushPinImageSourceConverter}}"

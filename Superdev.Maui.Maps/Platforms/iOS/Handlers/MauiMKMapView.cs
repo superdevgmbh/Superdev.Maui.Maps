@@ -240,9 +240,9 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
             // SendMarkerClick() returns the value of PinClickedEventArgs.HideInfoWindow
             // Hide the info window by deselecting the annotation
-            var deselect = pin.SendMarkerClick();
+            var sendMarkerClickHandled = pin.SendMarkerClick();
 
-            if (deselect)
+            if (sendMarkerClickHandled)
             {
                 this.Map.DeselectAnnotation(annotation, false);
             }

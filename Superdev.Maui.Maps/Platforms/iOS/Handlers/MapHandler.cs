@@ -191,9 +191,9 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             var selectedPins = map.Pins
                 .Where(p => p.IsSelected);
 
-            foreach (var customPin in selectedPins)
+            foreach (var pin in selectedPins)
             {
-                customPin.IsSelected = false;
+                pin.IsSelected = false;
             }
 
             selectedPin.IsSelected = true;
@@ -201,10 +201,12 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             var selectedItem = map.Pins.FirstOrDefault(p => Equals(p, selectedPin))?.BindingContext;
             map.SelectedItem = selectedItem ?? selectedPin;
 
-            if (selectedPin is { MarkerClickedCommand: ICommand markerClickedCommand } &&
-                markerClickedCommand.CanExecute(null))
+            if (selectedPin is { MarkerClickedCommand: ICommand markerClickedCommand })
             {
-                markerClickedCommand.Execute(null);
+                if (markerClickedCommand.CanExecute(null))
+                {
+                    markerClickedCommand.Execute(null);
+                }
             }
 
             // if the tap happened on the annotation view itself, skip because this is what happens when the callout is showing

@@ -68,7 +68,7 @@ namespace Superdev.Maui.Maps
             handlers.AddHandler<Superdev.Maui.Maps.Controls.Map, Superdev.Maui.Maps.Platforms.Handlers.MapHandler>();
 
             handlers.AddHandler<Microsoft.Maui.Controls.Maps.Pin, Microsoft.Maui.Maps.Handlers.MapPinHandler>();
-            handlers.AddHandler<Superdev.Maui.Maps.Controls.Pin, Platforms.Handlers.MapPinHandler>();
+            handlers.AddHandler<Superdev.Maui.Maps.Controls.Pin, Superdev.Maui.Maps.Platforms.Handlers.MapPinHandler>();
 
             handlers.AddHandler<MapElement, Microsoft.Maui.Maps.Handlers.MapElementHandler>();
 #endif

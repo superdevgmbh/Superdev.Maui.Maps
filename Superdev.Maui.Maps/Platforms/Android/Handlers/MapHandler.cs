@@ -6,6 +6,7 @@ using Android.Gms.Maps.Model;
 using Android.OS;
 using Java.Lang;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Maps.Platform;
@@ -20,6 +21,7 @@ using Exception = System.Exception;
 using IMap = Microsoft.Maui.Maps.IMap;
 using Map = Superdev.Maui.Maps.Controls.Map;
 using Math = System.Math;
+using Pin = Superdev.Maui.Maps.Controls.Pin;
 using Trace = System.Diagnostics.Trace;
 
 namespace Superdev.Maui.Maps.Platforms.Handlers
@@ -343,9 +345,9 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                 .Where(p => p.IsSelected)
                 .ToArray();
 
-            foreach (var customPin in selectedPins)
+            foreach (var pin in selectedPins)
             {
-                customPin.IsSelected = false;
+                pin.IsSelected = false;
             }
 
             if (map.SelectedItem is object selectedItem)
@@ -391,11 +393,6 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             }
 
             this.InitialUpdate();
-        }
-
-        private void GoogleMapOnCameraMove(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();
         }
 
         private void OnCameraMove()
@@ -504,9 +501,9 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             var selectedPins = map.Pins
                 .Where(p => p.IsSelected);
 
-            foreach (var customPin in selectedPins)
+            foreach (var pin in selectedPins)
             {
-                customPin.IsSelected = false;
+                pin.IsSelected = false;
             }
 
             selectedPin.IsSelected = true;
@@ -515,17 +512,21 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             map.SelectedItem = selectedItem ?? selectedPin;
 
             // Setting e.Handled = true will prevent the info window from being presented
-            // SendMarkerClick() returns the value of PinClickedEventArgs.HideInfoWindow
-            var handled = selectedPin.SendMarkerClick();
-            e.Handled = handled;
+            // SendMarkerClick returns the value of PinClickedEventArgs.HideInfoWindow
+            var sendMarkerClickHandled = selectedPin.SendMarkerClick();
+            var markerClickedCommandHandled = false;
 
             if (selectedPin is { MarkerClickedCommand: ICommand markerClickedCommand })
             {
-                if (markerClickedCommand.CanExecute(null))
+                var eventArgs = new PinClickedEventArgs();
+                if (markerClickedCommand.CanExecute(eventArgs))
                 {
-                    markerClickedCommand.Execute(null);
+                    markerClickedCommand.Execute(eventArgs);
+                    markerClickedCommandHandled = eventArgs.HideInfoWindow;
                 }
             }
+
+            e.Handled = sendMarkerClickHandled || markerClickedCommandHandled;
         }
 
         private void OnInfoWindowClick(object? sender, GoogleMap.InfoWindowClickEventArgs e)
