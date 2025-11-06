@@ -36,6 +36,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             [nameof(Map.IsShowingUser)] = MapIsShowingUser,
             [nameof(Map.IsScrollEnabled)] = MapIsScrollEnabled,
             [nameof(Map.IsRotateEnabled)] = MapIsRotateEnabled,
+            [nameof(Map.IsTiltEnabled)] = MapIsTiltEnabled,
             [nameof(Map.IsTrafficEnabled)] = MapIsTrafficEnabled,
             [nameof(Map.IsZoomEnabled)] = MapIsZoomEnabled,
             [nameof(Map.Pins)] = MapPins,
@@ -139,6 +140,12 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
         {
             var googleMap = handler?.GoogleMap;
             googleMap?.UpdateIsRotateEnabled(map);
+        }
+
+        public static void MapIsTiltEnabled(MapHandler handler, Map map)
+        {
+            var googleMap = handler?.GoogleMap;
+            googleMap?.UpdateIsTiltEnabled(map);
         }
 
         public static void MapIsTrafficEnabled(MapHandler handler, IMap map)
@@ -388,6 +395,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                 googleMap.UpdateIsShowingUser(map, this.MauiContext);
                 googleMap.UpdateIsScrollEnabled(map);
                 googleMap.UpdateIsRotateEnabled(map);
+                googleMap.UpdateIsTiltEnabled(map);
                 googleMap.UpdateIsTrafficEnabled(map);
                 googleMap.UpdateIsZoomEnabled(map);
             }

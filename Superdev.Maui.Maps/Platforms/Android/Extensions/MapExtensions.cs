@@ -35,5 +35,15 @@ namespace Superdev.Maui.Maps.Platforms.Extensions
 
             googleMap.UiSettings.RotateGesturesEnabled = map.IsRotateEnabled;
         }
+
+        public static void UpdateIsTiltEnabled(this GoogleMap googleMap, Map map)
+        {
+            if (googleMap == null)
+            {
+                return;
+            }
+
+            googleMap.UiSettings.TiltGesturesEnabled = map.IsTiltEnabled;
+        }
     }
 }

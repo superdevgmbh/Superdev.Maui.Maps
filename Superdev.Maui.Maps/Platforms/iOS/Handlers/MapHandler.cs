@@ -8,12 +8,15 @@ using System.Windows.Input;
 using CoreLocation;
 using Foundation;
 using MapKit;
+using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Maps;
 using ObjCRuntime;
 using Superdev.Maui.Maps.Controls;
 using UIKit;
 using Superdev.Maui.Maps.Platforms.Extensions;
 using Superdev.Maui.Maps.Platforms.Utils;
+using Superdev.Maui.Maps.Utils;
+using Pin = Superdev.Maui.Maps.Controls.Pin;
 
 namespace Superdev.Maui.Maps.Platforms.Handlers
 {
@@ -30,6 +33,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             [nameof(IMap.IsShowingUser)] = MapIsShowingUser,
             [nameof(IMap.IsScrollEnabled)] = MapIsScrollEnabled,
             [nameof(Map.IsRotateEnabled)] = MapIsRotateEnabled,
+            [nameof(Map.IsTiltEnabled)] = MapIsTiltEnabled,
             [nameof(IMap.IsTrafficEnabled)] = MapIsTrafficEnabled,
             [nameof(IMap.IsZoomEnabled)] = MapIsZoomEnabled,
             [nameof(IMap.Pins)] = MapPins,
@@ -289,6 +293,12 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 		{
             var mapView = handler.PlatformView;
             mapView.Map.RotateEnabled = map.IsRotateEnabled;
+		}
+
+		public static void MapIsTiltEnabled(MapHandler handler, Map map)
+		{
+            var mapView = handler.PlatformView;
+            mapView.Map.PitchEnabled = map.IsTiltEnabled;
 		}
 
 		public static void MapIsTrafficEnabled(MapHandler handler, IMap map)

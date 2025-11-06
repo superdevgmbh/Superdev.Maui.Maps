@@ -44,6 +44,7 @@ namespace MapsDemoApp.ViewModels
         private bool isTrafficEnabled;
         private bool isScrollEnabled = true;
         private bool isRotateEnabled = true;
+        private bool isTiltEnabled = true;
         private bool isZoomEnabled = true;
         private bool isReadonly;
         private Distance zoomLevel;
@@ -178,6 +179,12 @@ namespace MapsDemoApp.ViewModels
         {
             get => this.isRotateEnabled;
             set => this.SetProperty(ref this.isRotateEnabled, value);
+        }
+
+        public bool IsTiltEnabled
+        {
+            get => this.isTiltEnabled;
+            set => this.SetProperty(ref this.isTiltEnabled, value);
         }
 
         public bool IsZoomEnabled

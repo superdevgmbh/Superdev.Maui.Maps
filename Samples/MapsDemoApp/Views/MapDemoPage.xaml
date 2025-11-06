@@ -27,6 +27,7 @@
                 IsRotateEnabled="{Binding IsRotateEnabled}"
                 IsScrollEnabled="{Binding IsScrollEnabled}"
                 IsShowingUser="{Binding IsShowingUser}"
+                IsTiltEnabled="{Binding IsTiltEnabled}"
                 IsTrafficEnabled="{Binding IsTrafficEnabled}"
                 IsZoomEnabled="{Binding IsZoomEnabled}"
                 ItemsSource="{Binding ParkingLots}"

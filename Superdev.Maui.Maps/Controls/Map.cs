@@ -73,6 +73,21 @@ namespace Superdev.Maui.Maps.Controls
             set => this.SetValue(IsRotateEnabledProperty, value);
         }
 
+        public static readonly BindableProperty IsTiltEnabledProperty = BindableProperty.Create(
+            nameof(IsTiltEnabled),
+            typeof(bool),
+            typeof(Map),
+            true);
+
+        /// <summary>
+        /// Gets or sets a value that indicates if tilting/pitching by user input is enabled. Default value is <see langword="true"/>.
+        /// </summary>
+        public bool IsTiltEnabled
+        {
+            get => (bool)this.GetValue(IsTiltEnabledProperty);
+            set => this.SetValue(IsTiltEnabledProperty, value);
+        }
+
         public static readonly BindableProperty IsZoomEnabledProperty = BindableProperty.Create(
             nameof(IsZoomEnabled),
             typeof(bool),
