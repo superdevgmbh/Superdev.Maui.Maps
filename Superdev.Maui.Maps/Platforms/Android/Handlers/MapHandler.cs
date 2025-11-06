@@ -435,7 +435,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         private void InitialUpdate()
         {
-            if (this.GoogleMap == null)
+            if (this.GoogleMap is not GoogleMap googleMap)
             {
                 return;
             }
@@ -456,7 +456,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                 this.init = false;
             }
 
-            this.UpdateVisibleRegion(this.GoogleMap.CameraPosition.Target);
+            this.UpdateVisibleRegion(googleMap.CameraPosition.Target);
         }
 
         private void MoveToRegion(MapSpan mapSpan, bool animated)
@@ -490,13 +490,18 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         private void OnMarkerClick(object? sender, GoogleMap.MarkerClickEventArgs e)
         {
-            var selectedPin = this.GetPinForMarker(e.Marker);
-            if (selectedPin == null)
+            var map = this.VirtualView;
+
+            if (map.IsReadonly)
             {
                 return;
             }
 
-            var map = this.VirtualView;
+            var selectedPin = map.GetPinForMarker(e.Marker);
+            if (selectedPin == null)
+            {
+                return;
+            }
 
             var selectedPins = map.Pins
                 .Where(p => p.IsSelected);
@@ -532,7 +537,8 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
         private void OnInfoWindowClick(object? sender, GoogleMap.InfoWindowClickEventArgs e)
         {
             var marker = e.Marker;
-            var pin = this.GetPinForMarker(marker);
+            var map = this.VirtualView;
+            var pin = map.GetPinForMarker(marker);
 
             if (pin == null)
             {
@@ -607,26 +613,6 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             Trace.WriteLine($"AddPins finished in {stopwatch.ElapsedMilliseconds}ms");
 
             this.pins = null;
-        }
-
-        protected Pin GetPinForMarker(Marker marker)
-        {
-            Pin targetPin = null;
-
-            var map = this.VirtualView;
-            foreach (var pin in map.Pins)
-            {
-                if (pin?.MarkerId is string markerId)
-                {
-                    if (markerId == marker.Id)
-                    {
-                        targetPin = pin;
-                        break;
-                    }
-                }
-            }
-
-            return targetPin;
         }
 
         private void ClearMapElements()

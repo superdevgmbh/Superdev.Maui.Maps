@@ -182,6 +182,12 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
         protected virtual void OnCalloutClicked(IMKAnnotation annotation)
         {
             var map = this.VirtualView;
+
+            if (map.IsReadonly)
+            {
+                return;
+            }
+
             var selectedPin = map.GetPinForAnnotation(annotation);
             if (selectedPin == null)
             {
@@ -203,9 +209,11 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
             if (selectedPin is { MarkerClickedCommand: ICommand markerClickedCommand })
             {
-                if (markerClickedCommand.CanExecute(null))
+                var eventArgs = new PinClickedEventArgs();
+                if (markerClickedCommand.CanExecute(eventArgs))
                 {
-                    markerClickedCommand.Execute(null);
+                    markerClickedCommand.Execute(eventArgs);
+                    // markerClickedCommandHandled = eventArgs.HideInfoWindow; // TODO: What to do with HideInfoWindow result?
                 }
             }
 

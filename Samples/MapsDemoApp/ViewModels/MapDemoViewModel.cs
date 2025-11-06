@@ -103,8 +103,6 @@ namespace MapsDemoApp.ViewModels
         {
             try
             {
-                this.IsReadonly = false;
-
                 this.isShowingUser = this.preferences.Get("IsShowingUser", false);
                 this.RaisePropertyChanged(nameof(this.IsShowingUser));
 
@@ -155,7 +153,7 @@ namespace MapsDemoApp.ViewModels
         public bool IsReadonly
         {
             get => this.isReadonly;
-            private set => this.SetProperty(ref this.isReadonly, value);
+            set => this.SetProperty(ref this.isReadonly, value);
         }
 
         public bool IsShowingUser

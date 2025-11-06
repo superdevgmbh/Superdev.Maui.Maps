@@ -312,7 +312,7 @@ namespace Superdev.Maui.Maps.Controls
         }
 
         /// <summary>
-        /// Gets or sets the object that represents the collection of pins that should be shown on the map.
+        /// Gets or sets the collection of objects that represent pins on the map.
         /// </summary>
         public IEnumerable ItemsSource
         {
