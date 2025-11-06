@@ -303,7 +303,7 @@ namespace Superdev.Maui.Maps.Controls
                     this.pins.AddRange(pinsToReplace);
                     break;
                 case NotifyCollectionChangedAction.Reset:
-                    var newPins = this.CreatePins();
+                    var newPins = this.CreatePins(this.ItemsSource);
                     this.pins.ReplaceRange(newPins);
                     break;
             }
@@ -534,11 +534,6 @@ namespace Superdev.Maui.Maps.Controls
         IEnumerator IEnumerable.GetEnumerator()
         {
             return this.GetEnumerator();
-        }
-
-        private IEnumerable<Pin> CreatePins()
-        {
-            return this.CreatePins(this.ItemsSource);
         }
 
         private IEnumerable<Pin> CreatePins(IEnumerable source)

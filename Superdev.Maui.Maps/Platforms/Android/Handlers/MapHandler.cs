@@ -560,17 +560,14 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             var stopwatch = Stopwatch.StartNew();
             this.pins = pins;
 
-            var mauiContext = this.MauiContext;
-            if (this.GoogleMap == null || mauiContext == null)
+            if (this.GoogleMap is not GoogleMap googleMap ||
+                this.MauiContext is not IMauiContext mauiContext)
             {
                 // Mapper could be called before we have a Map ready
                 return;
             }
 
-            if (this.markers == null)
-            {
-                this.markers = new List<Marker>();
-            }
+            this.markers ??= new List<Marker>();
 
             foreach (var pin in pins.Cast<IMapPin>())
             {
@@ -595,7 +592,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                         }
                     }
 
-                    var marker = this.GoogleMap.AddMarker(markerOptions);
+                    var marker = googleMap.AddMarker(markerOptions);
                     if (marker == null)
                     {
                         throw new Exception("Map.AddMarker returned null");
