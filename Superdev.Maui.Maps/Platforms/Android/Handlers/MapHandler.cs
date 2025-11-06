@@ -381,6 +381,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             }
 
             this.GoogleMap = googleMap;
+            googleMap.UiSettings.MapToolbarEnabled = false;
 
             googleMap.SetOnCameraMoveListener(new CameraMoveListener(this.OnCameraMove, CameraMoveDebounceDelay));
 
