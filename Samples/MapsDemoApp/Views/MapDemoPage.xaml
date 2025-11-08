@@ -1,55 +1,68 @@
 <?xml version="1.0" encoding="utf-8" ?>
+
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:c="http://Superdev.Maui.Maps"
+    xmlns:m="http://Superdev.Maui.Maps"
+    xmlns:s="http://schemas.superdev.ch/dotnet/2021/maui"
+    xmlns:views="clr-namespace:MapsDemoApp.Views"
     xmlns:vm="clr-namespace:MapsDemoApp.ViewModels"
     x:Class="MapsDemoApp.Views.MapDemoPage"
-    Title="MapDemoPage"
+    Title="Superdev.Maui.Maps Demo"
     x:DataType="vm:MapDemoViewModel">
-    
-    <ContentPage.ToolbarItems>
-        <ToolbarItem 
-            IconImageSource="{Binding TorchOn, Converter={StaticResource BoolToTorchConverter}}"
-            Command="{Binding ToggleTorchCommand}"  />
-    </ContentPage.ToolbarItems>
-    
-    <Grid RowDefinitions="*, Auto">
-        <!--<c:CameraView
+
+    <ContentPage.Behaviors>
+        <s:EventToCommandBehavior
+            Command="{Binding AppearingCommand}"
+            EventName="Appearing" />
+    </ContentPage.Behaviors>
+
+    <Grid>
+        <Grid RowDefinitions="*, Auto">
+            <m:Map
+                x:Name="SuperdevMauiMap"
+                Grid.Row="0"
+                CenterPosition="{Binding CurrentPosition, Mode=OneWay}"
+                IsReadonly="{Binding IsReadonly}"
+                IsRotateEnabled="{Binding IsRotateEnabled}"
+                IsScrollEnabled="{Binding IsScrollEnabled}"
+                IsShowingUser="{Binding IsShowingUser}"
+                IsTiltEnabled="{Binding IsTiltEnabled}"
+                IsTrafficEnabled="{Binding IsTrafficEnabled}"
+                IsZoomEnabled="{Binding IsZoomEnabled}"
+                ItemsSource="{Binding ParkingLots}"
+                MapElements="{Binding MapElements}"
+                MapType="{Binding MapType}"
+                SelectedItem="{Binding SelectedParkingLot}"
+                VisibleRegion="{Binding VisibleRegion}"
+                ZoomLevel="{Binding ZoomLevel}">
+                <!--  Default pin  -->
+                <m:Map.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ParkingLotViewModel">
+                        <!--  Pin with Location  -->
+                        <!-- <m:Pin Location="{Binding Location}" /> -->
+
+                        <!--  Pin with Location, Label and Address  -->
+                        <!--  <m:Pin  -->
+                        <!--  Address="Address"  -->
+                        <!--  Label="{Binding Name}"  -->
+                        <!--  Location="{Binding Location}" />  -->
+
+                        <!--  Pin with Location, Label, Address and ImageSource  -->
+                        <m:Pin
+                            Anchor="{Binding Anchor}"
+                            ImageSource="{Binding Source={x:RelativeSource Self}, Path=IsSelected, Converter={StaticResource BoolToPushPinImageSourceConverter}}"
+                            Location="{Binding Location}"
+                            MarkerClickedCommand="{Binding MarkerClickedCommand}" />
+                    </DataTemplate>
+                </m:Map.ItemTemplate>
+            </m:Map>
+
+            <views:BottomMenu Grid.Row="1" />
+        </Grid>
+
+        <s:PageActivityIndicator
             Grid.Row="0"
-            BarcodeFormats="QR"
-            CameraEnabled="{Binding IsScannerEnabled}"
-            OnDetectionFinishedCommand="{Binding OnDetectionFinishedCommand}"
-            PauseScanning="{Binding IsScannerPause}"
-            TorchOn="{Binding TorchOn}"/>
-
-        <c:QRCodeOverlay
-            BracketColor="{StaticResource Primary}"
-            ShadeColor="Black"
-            ShadeOpacity="0.5" />-->
-
-        <VerticalStackLayout
-            Grid.Row="1"
-            Padding="16"
-            Spacing="16"
-            VerticalOptions="Start">
-
-            <Grid
-                ColumnDefinitions="*, *"
-                ColumnSpacing="8"
-                VerticalOptions="Fill">
-
-                <Button
-                    Grid.Column="0"
-                    Command="{Binding StartCameraCommand}"
-                    Text="Start Camera"
-                    HorizontalOptions="Fill" />
-                <Button
-                    Grid.Column="1"
-                    Command="{Binding StopCameraCommand}"
-                    Text="Stop Camera"
-                    HorizontalOptions="Fill" />
-            </Grid>
-        </VerticalStackLayout>
+            IsBusy="{Binding IsBusy}" />
     </Grid>
 </ContentPage>

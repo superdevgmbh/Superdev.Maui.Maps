@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net9.0-android;net9.0-ios</TargetFrameworks>
+    <TargetFrameworks>net9.0-android;net9.0-ios18.0</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <RootNamespace>MapsDemoApp</RootNamespace>
     <UseMaui>true</UseMaui>
@@ -11,10 +11,10 @@
     <Nullable>disable</Nullable>
 
     <!-- Display name -->
-    <ApplicationTitle>Maps Demo App</ApplicationTitle>
+    <ApplicationTitle>Maps Demo</ApplicationTitle>
 
     <!-- App Identifier -->
-    <ApplicationId>ch.superdev.mapsdemoapp</ApplicationId>
+    <ApplicationId>ch.superdev.mapsdemo</ApplicationId>
 
     <!-- Versions -->
     <ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
@@ -100,24 +100,19 @@
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Maui" Version="12.2.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="HttpClient.Caching" Version="1.6.6" />
     <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
     <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.7" />
     <PackageReference Include="NLog.Extensions.Logging" Version="5.5.0" />
     <PackageReference Include="ObjectDumper.NET" Version="4.3.2" />
-    <PackageReference Include="Sentry.Maui" Version="5.11.2" />
-    <PackageReference Include="Superdev.Maui" Version="1.0.125-pre" />
-    <PackageReference Include="ValueConverters.MAUI" Version="3.1.22" />
+    <PackageReference Include="Sentry.Maui" Version="5.16.1" />
+    <PackageReference Include="Superdev.Maui" Version="1.0.134" />
+    <PackageReference Include="ValueConverters.MAUI" Version="4.0.9-pre" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Superdev.Maui.Maps\Superdev.Maui.Maps.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Views\MapDemoPage.xaml.cs">
-      <DependentUpon>MapDemoPage.xaml</DependentUpon>
-    </Compile>
   </ItemGroup>
   
 </Project>

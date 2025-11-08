@@ -1,13 +1,12 @@
-﻿using System.Diagnostics;
-
-namespace Superdev.Maui.Maps.Utils
+﻿namespace Superdev.Maui.Maps.Utils
 {
-    /// <summary>
-    /// Source: https://github.com/thomasgalliker/CrossPlatformLibrary/blob/develop/CrossPlatformLibrary.Shared/Utils/TaskDelayer.cs
-    /// </summary>
     internal class TaskDelayer
     {
         private CancellationTokenSource throttleCts = new CancellationTokenSource();
+
+        public TaskDelayer()
+        {
+        }
 
         /// <summary>
         ///     Runs the given <paramref name="action" /> in a background thread with a sliding <paramref name="delay" />.
@@ -17,7 +16,11 @@ namespace Superdev.Maui.Maps.Utils
             return this.RunWithDelay(delay, () =>
             {
                 action();
+#if NETFX
+                return Task.FromResult(false);
+#else
                 return Task.CompletedTask;
+#endif
             });
         }
 
@@ -38,7 +41,6 @@ namespace Superdev.Maui.Maps.Utils
                 try
                 {
                     Interlocked.Exchange(ref this.throttleCts, new CancellationTokenSource()).Cancel();
-
                     await Task.Delay(delay, this.throttleCts.Token)
                         .ContinueWith(async ct =>
                             {
@@ -56,9 +58,9 @@ namespace Superdev.Maui.Maps.Utils
                             TaskContinuationOptions.OnlyOnRanToCompletion,
                             TaskScheduler.Default);
                 }
-                catch (Exception ex)
+                catch
                 {
-                    Debug.WriteLine($"RunWithDelay failed with exception: {ex}");
+                    // Ignore any Threading errors
                     tcs.TrySetResult(defaultValue());
                 }
             }).ConfigureAwait(false);
@@ -76,27 +78,16 @@ namespace Superdev.Maui.Maps.Utils
             try
             {
                 Interlocked.Exchange(ref this.throttleCts, new CancellationTokenSource()).Cancel();
-
                 await Task.Delay(delay, this.throttleCts.Token)
                     .ContinueWith(async ct => await task().ConfigureAwait(false),
                         CancellationToken.None,
                         TaskContinuationOptions.OnlyOnRanToCompletion,
-                        TaskScheduler.Default);
+                        TaskScheduler.FromCurrentSynchronizationContext());
             }
-            catch (TaskCanceledException)
+            catch
             {
-                // Ignore TaskCanceledException
+                // Ignore any Threading errors
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"RunWithDelay failed with exception: {ex}");
-                throw;
-            }
-        }
-
-        public void Cancel()
-        {
-            this.throttleCts.Cancel();
         }
     }
 }

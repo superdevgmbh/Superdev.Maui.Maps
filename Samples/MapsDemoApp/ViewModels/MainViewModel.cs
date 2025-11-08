@@ -1,8 +1,7 @@
-﻿using System.Windows.Input;
-using MapsDemoApp.Services.Navigation;
-using Superdev.Maui.Maps;
+﻿using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Superdev.Maui.Services;
 using Microsoft.Extensions.Logging;
 
 namespace MapsDemoApp.ViewModels
@@ -14,10 +13,7 @@ namespace MapsDemoApp.ViewModels
         private readonly IDialogService dialogService;
         private readonly ILauncher launcher;
 
-        private IAsyncRelayCommand appearingCommand;
-        private bool isInitialized;
         private IAsyncRelayCommand<string> navigateToPageCommand;
-        private IAsyncRelayCommand<string> navigateToModalPageCommand;
         private IAsyncRelayCommand<string> openUrlCommand;
 
         public MainViewModel(
@@ -32,33 +28,6 @@ namespace MapsDemoApp.ViewModels
             this.launcher = launcher;
         }
 
-        public IAsyncRelayCommand AppearingCommand
-        {
-            get => this.appearingCommand ??= new AsyncRelayCommand(this.OnAppearingAsync);
-        }
-
-        private async Task OnAppearingAsync()
-        {
-            if (!this.isInitialized)
-            {
-                await this.InitializeAsync();
-                this.isInitialized = true;
-            }
-        }
-
-        private async Task InitializeAsync()
-        {
-            try
-            {
-                
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError(ex, "InitializeAsync failed with exception");
-                await this.dialogService.DisplayAlertAsync("Error", "Initialization failed", "OK");
-            }
-        }
-
         public IAsyncRelayCommand<string> NavigateToPageCommand
         {
             get => this.navigateToPageCommand ??= new AsyncRelayCommand<string>(this.NavigateToPageAsync);
@@ -66,18 +35,11 @@ namespace MapsDemoApp.ViewModels
 
         private async Task NavigateToPageAsync(string page)
         {
+            var stopwatch = Stopwatch.StartNew();
             await this.navigationService.PushAsync(page);
+            this.logger.LogTrace($"NavigateToPageAsync finished in {stopwatch.ElapsedMilliseconds}ms");
         }
 
-        public IAsyncRelayCommand<string> NavigateToModalPageCommand
-        {
-            get => this.navigateToModalPageCommand ??= new AsyncRelayCommand<string>(this.NavigateToModalPageAsync);
-        }
-
-        private async Task NavigateToModalPageAsync(string page)
-        {
-            await this.navigationService.PushModalAsync(page);
-        }
 
         public IAsyncRelayCommand<string> OpenUrlCommand
         {
