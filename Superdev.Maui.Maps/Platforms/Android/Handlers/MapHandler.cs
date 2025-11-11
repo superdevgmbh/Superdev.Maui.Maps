@@ -90,6 +90,12 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             return mapView;
         }
 
+        // ViewHandler<TVirtualView, TPlatformView> throws an InvalidOperationException
+        // if we try to access VirtualView while it's not yet been initialized.
+        // That's why we jump to ElementHandler.VirtualView to retrieve the Map object.
+
+        public new Map VirtualView => ((ElementHandler)this).VirtualView as Map;
+
         protected override void ConnectHandler(MapView platformView)
         {
             base.ConnectHandler(platformView);
@@ -389,8 +395,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             googleMap.InfoWindowClick += this.OnInfoWindowClick;
             googleMap.MapClick += this.OnMapClick;
 
-            var map = this.VirtualView;
-            if (map != null)
+            if (this.VirtualView is Map map)
             {
                 googleMap.UpdateMapType(map);
                 googleMap.UpdateIsShowingUser(map, this.MauiContext);
