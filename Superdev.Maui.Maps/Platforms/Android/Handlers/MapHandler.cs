@@ -326,22 +326,19 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             return targetPolygon;
         }
 
-        public static void MapPins(MapHandler handler, Map map)
+        public static void MapPins(MapHandler mapHandler, Map map)
         {
-            if (handler is MapHandler mapHandler)
+            if (mapHandler.markers != null)
             {
-                if (mapHandler.markers != null)
+                for (var i = 0; i < mapHandler.markers.Count; i++)
                 {
-                    for (var i = 0; i < mapHandler.markers.Count; i++)
-                    {
-                        mapHandler.markers[i].Remove();
-                    }
-
-                    mapHandler.markers = null;
+                    mapHandler.markers[i].Remove();
                 }
 
-                mapHandler.AddPins((IList)map.Pins);
+                mapHandler.markers = null;
             }
+
+            mapHandler.AddPins((IList)map.Pins);
         }
 
         public static void MapElements(MapHandler handler, IMap map)
