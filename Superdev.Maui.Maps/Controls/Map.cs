@@ -173,17 +173,14 @@ namespace Superdev.Maui.Maps.Controls
 
         private static void OnCenterPositionPropertyChanged(BindableObject bindable, object oldValue, object newValue)
         {
-            if (newValue is not Location center)
+            if (newValue is not Location center || center.IsUnknown())
             {
                 return;
             }
 
-            if (!center.IsUnknown())
-            {
-                var map = (Map)bindable;
-                var mapSpan = MapSpan.FromCenterAndRadius(center, map.ZoomLevel);
-                map.MoveToRegion(mapSpan);
-            }
+            var map = (Map)bindable;
+            var mapSpan = MapSpan.FromCenterAndRadius(center, map.ZoomLevel);
+            map.MoveToRegion(mapSpan);
         }
 
         public Location CenterPosition
@@ -194,7 +191,7 @@ namespace Superdev.Maui.Maps.Controls
 
         public static readonly BindableProperty VisibleRegionProperty = BindableProperty.Create(
             nameof(VisibleRegion),
-            typeof(MapSpan), // TODO: MapMoveRequest
+            typeof(MapSpan),
             typeof(Map),
             null,
             BindingMode.TwoWay,

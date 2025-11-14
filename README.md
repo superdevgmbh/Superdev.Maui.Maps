@@ -54,22 +54,22 @@ Example:
 
 | Property               | Description                                                                                       |
 |------------------------|---------------------------------------------------------------------------------------------------|
+| `IsShowingUser`        | Shows an indicator for the user’s current location. *(Default: false)*                            |
 | `IsScrollEnabled`      | Enables or disables scrolling/panning by user input. *(Default: true)*                            |
 | `IsZoomEnabled`        | Enables or disables zooming by user input. *(Default: true)*                                      |
-| `IsShowingUser`        | Shows an indicator for the user’s current location. *(Default: false)*                            |
-| `IsRotateEnabled`        | Enables or disables rotation of the map. *(Default: true)*                                        |
-| `IsTiltEnabled`        | Enables or disables tilting of the map. *(Default: true)*                                         |
+| `IsRotateEnabled`      | Enables or disables rotation of the map by user input. *(Default: true)*                                        |
+| `IsTiltEnabled`        | Enables or disables tilting by user input. *(Default: true)*                                         |
 | `IsTrafficEnabled`     | Displays a live traffic overlay. *(Default: false)*                                               |
 | `MapType`              | Defines the visual style of the map (`Street`, `Satellite`, `Hybrid`, etc.).                      |
-| `IsReadonly`           | Custom: makes the map non-interactive when `true`. *(Default: false)*                             |
-| `CenterPosition`       | Two-way: sets or tracks the center `Location` of the map. Changing this moves the map’s viewport. |
-| `ZoomLevel`            | Two-way: defines the zoom level as a `Distance`. *(Default: default(Distance))*                   |
-| `VisibleRegion`              | Two-way: defines the visible region (`MapSpan`) of the map (center + radius).                     |
-| `ItemsSource`          | The data collection used to generate pins or map items.                                           |
+| `IsReadonly`           | Makes the map pins non-interactive when `true`. *(Default: false)*                             |
+| `CenterPosition`       | Sets or tracks the center `Location` of the map. Changing this property moves the map's viewport. |
+| `ZoomLevel`            | Defines the zoom level as a `Distance`. *(Default: default(Distance))*                   |
+| `VisibleRegion`        | Defines the visible region (`MapSpan`) of the map (center + radius). You can either use `CenterPosition` + `ZoomLevel` to specify the current map position or you can use `VisibleRegion` to do so.                      |
+| `ItemsSource`          | The data collection used to generate pins. Don't forget  to specify an `ItemTemplate` or an `ItemTemplateSelector` to display pins.                                        |
 | `SelectedItem`         | Two-way: the currently selected item from the `ItemsSource`.                                      |
-| `ItemTemplate`         | Template (`DataTemplate`) used to render each element in `ItemsSource`.                           |
-| `ItemTemplateSelector` | Template selector (`DataTemplateSelector`) used to dynamically choose templates.                  |
-| `MapElements`          | Collection of visual elements (pins, polylines, polygons, etc.) currently attached to the map.    |
+| `ItemTemplate`         | Template used to render each element in `ItemsSource`.                           |
+| `ItemTemplateSelector` | Template selector used to dynamically choose templates.                  |
+| `MapElements`          | Collection of visual map overlays (pins, polylines, polygons, etc.) currently attached to the map.    |
 
 ### Pin 📍
 The `Pin` control represents a map marker.
@@ -111,5 +111,6 @@ Contributors welcome! If you find a bug or you want to propose a new feature, fe
 - https://github.com/dmariogatto/Maui.Controls.BetterMaps
 - https://github.com/CarlosMenendezSMSopen/VMedic
 - https://github.com/iratrips-india/IratripsMapKit/tree/maui
+- https://github.com/jorgediegocrespo/MauiMaps/tree/main
 - https://github.com/dotnet/macios/blob/main/src/mapkit.cs
 - https://github.com/NAXAM/cchmapclustercontroller-ios-binding/

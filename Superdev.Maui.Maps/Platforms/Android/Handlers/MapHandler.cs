@@ -90,6 +90,12 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             return mapView;
         }
 
+        // ViewHandler<TVirtualView, TPlatformView> throws an InvalidOperationException
+        // if we try to access VirtualView while it's not yet been initialized.
+        // That's why we jump to ElementHandler.VirtualView to retrieve the Map object.
+
+        public new Map VirtualView => ((ElementHandler)this).VirtualView as Map;
+
         protected override void ConnectHandler(MapView platformView)
         {
             base.ConnectHandler(platformView);
@@ -320,22 +326,19 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             return targetPolygon;
         }
 
-        public static void MapPins(MapHandler handler, Map map)
+        public static void MapPins(MapHandler mapHandler, Map map)
         {
-            if (handler is MapHandler mapHandler)
+            if (mapHandler.markers != null)
             {
-                if (mapHandler.markers != null)
+                for (var i = 0; i < mapHandler.markers.Count; i++)
                 {
-                    for (var i = 0; i < mapHandler.markers.Count; i++)
-                    {
-                        mapHandler.markers[i].Remove();
-                    }
-
-                    mapHandler.markers = null;
+                    mapHandler.markers[i].Remove();
                 }
 
-                mapHandler.AddPins((IList)map.Pins);
+                mapHandler.markers = null;
             }
+
+            mapHandler.AddPins((IList)map.Pins);
         }
 
         public static void MapElements(MapHandler handler, IMap map)
@@ -389,8 +392,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             googleMap.InfoWindowClick += this.OnInfoWindowClick;
             googleMap.MapClick += this.OnMapClick;
 
-            var map = this.VirtualView;
-            if (map != null)
+            if (this.VirtualView is Map map)
             {
                 googleMap.UpdateMapType(map);
                 googleMap.UpdateIsShowingUser(map, this.MauiContext);
