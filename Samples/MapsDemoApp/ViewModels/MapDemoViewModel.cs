@@ -120,8 +120,8 @@ namespace MapsDemoApp.ViewModels
                 this.CurrentPosition = centerLocation != null ? centerLocation : Map.DefaultCenter;
 
                 var zoomLevel = parkingLocations.CalculateDistance() is Distance d
-                    ? Distance.FromKilometers(d.Kilometers * 0.5d)
-                    : Distance.FromKilometers(300);
+                    ? Distance.FromKilometers(d.Kilometers / 2d)
+                    : Distance.FromKilometers(300d);
 
                 this.ZoomLevel = zoomLevel;
 
