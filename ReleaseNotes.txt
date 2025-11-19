@@ -1,5 +1,6 @@
 1.1
-- Enable nullability of reference types
+- Enable nullability of reference types.
+- Add extension method for CalculateDistance and GetVisibleRegion from a list of locations.
 
 1.0
 - Initial release.
