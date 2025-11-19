@@ -77,7 +77,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
         {
         }
 
-        public MapHandler(IPropertyMapper mapper = null, CommandMapper commandMapper = null)
+        public MapHandler(IPropertyMapper? mapper = null, CommandMapper? commandMapper = null)
             : base(mapper ?? Mapper, commandMapper ?? CommandMapper)
         {
         }
@@ -94,7 +94,9 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
         // if we try to access VirtualView while it's not yet been initialized.
         // That's why we jump to ElementHandler.VirtualView to retrieve the Map object.
 
-        public new Map VirtualView => ((ElementHandler)this).VirtualView as Map;
+        public new Map? VirtualView => ((ElementHandler)this).VirtualView as Map;
+
+        public new MapView? PlatformView => ((ElementHandler)this).PlatformView as MapView;
 
         protected override void ConnectHandler(MapView platformView)
         {
@@ -166,7 +168,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             googleMap?.UpdateIsZoomEnabled(map);
         }
 
-        public static void MapMoveToRegion(MapHandler handler, IMap map, object arg)
+        public static void MapMoveToRegion(MapHandler handler, IMap map, object? arg)
         {
             if (arg is MapMoveRequest moveRequest)
             {
@@ -418,15 +420,24 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         internal void UpdateVisibleRegion(LatLng pos)
         {
-            if (this.GoogleMap == null)
+            if (this.GoogleMap is not GoogleMap googleMap)
             {
                 return;
             }
 
-            var mapView = this.PlatformView;
+            if (this.PlatformView is not MapView mapView)
+            {
+                return;
+            }
+
+            if (this.VirtualView is not Map map)
+            {
+                return;
+            }
+
             var width = mapView.Width;
             var height = mapView.Height;
-            var projection = this.GoogleMap.Projection;
+            var projection = googleMap.Projection;
             var ul = projection.FromScreenLocation(new APoint(0, 0));
             var ur = projection.FromScreenLocation(new APoint(width, 0));
             var ll = projection.FromScreenLocation(new APoint(0, height));
@@ -434,7 +445,6 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             var latitudeDegrees = Math.Max(Math.Abs(ul.Latitude - lr.Latitude), Math.Abs(ur.Latitude - ll.Latitude));
             var longitudeDegrees = Math.Max(Math.Abs(ul.Longitude - lr.Longitude), Math.Abs(ur.Longitude - ll.Longitude));
 
-            var map = this.VirtualView;
             var visibleRegion = new MapSpan(new Location(pos.Latitude, pos.Longitude), latitudeDegrees, longitudeDegrees);
             map.SetVisibleRegion(visibleRegion);
         }
@@ -501,7 +511,10 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         private void OnMarkerClick(object? sender, GoogleMap.MarkerClickEventArgs e)
         {
-            var map = this.VirtualView;
+            if (this.VirtualView is not Map map)
+            {
+                return;
+            }
 
             if (map.IsReadonly)
             {
@@ -547,8 +560,12 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         private void OnInfoWindowClick(object? sender, GoogleMap.InfoWindowClickEventArgs e)
         {
+            if (this.VirtualView is not Map map)
+            {
+                return;
+            }
+
             var marker = e.Marker;
-            var map = this.VirtualView;
             var pin = map.GetPinForMarker(marker);
 
             if (pin == null)
@@ -566,9 +583,13 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             }
         }
 
-        private void OnMapClick(object sender, GoogleMap.MapClickEventArgs e)
+        private void OnMapClick(object? sender, GoogleMap.MapClickEventArgs e)
         {
-            IMap map = this.VirtualView;
+            if (this.VirtualView is not IMap map)
+            {
+                return;
+            }
+
             map.Clicked(new Location(e.Point.Latitude, e.Point.Longitude));
         }
 
@@ -731,7 +752,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             var options = polygon.ToHandler(this.MauiContext!)?.PlatformView as PolygonOptions;
             if (options is null)
             {
-                throw new System.Exception("PolygonOptions is null");
+                throw new Exception("PolygonOptions is null");
             }
 
             var nativePolygon = map.AddPolygon(options);
@@ -757,7 +778,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             var options = circle.ToHandler(this.MauiContext!)?.PlatformView as CircleOptions;
             if (options is null)
             {
-                throw new System.Exception("CircleOptions is null");
+                throw new Exception("CircleOptions is null");
             }
 
             var nativeCircle = map.AddCircle(options);
@@ -767,7 +788,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             this.circles.Add(nativeCircle);
         }
 
-        public static void MapUpdateMapElement(MapHandler handler, Map map, object arg)
+        public static void MapUpdateMapElement(MapHandler handler, Map map, object? arg)
         {
             if (arg is not MapElementHandlerUpdate args)
             {

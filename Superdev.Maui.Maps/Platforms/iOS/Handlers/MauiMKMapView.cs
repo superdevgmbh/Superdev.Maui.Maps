@@ -17,17 +17,17 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
     public class MapView : UIView
     {
         private readonly WeakReference<MapHandler> handlerRef;
-        private MauiMKMapView mapView;
+        private MauiMKMapView? mapView;
         private bool fullyRendered;
         private bool disposed;
-        private UITapGestureRecognizer mapClickedGestureRecognizer;
+        private UITapGestureRecognizer? mapClickedGestureRecognizer;
 
         public MapView(MapHandler mapHandler)
         {
             this.handlerRef = new WeakReference<MapHandler>(mapHandler);
         }
 
-        public MKMapView CreateMap()
+        public MKMapView? CreateMap()
         {
             if (this.disposed)
             {
@@ -44,7 +44,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             return this.mapView;
         }
 
-        public MauiMKMapView Map => this.mapView;
+        public MauiMKMapView Map => this.mapView!;
 
         public override void MovedToWindow()
         {
@@ -61,7 +61,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         protected virtual MKOverlayRenderer GetViewForOverlayDelegate(MKMapView mapview, IMKOverlay overlay)
         {
-            MKOverlayRenderer overlayRenderer = null;
+            MKOverlayRenderer? overlayRenderer = null;
             switch (overlay)
             {
                 case MKPolyline polyline:
@@ -152,7 +152,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
         {
             foreach (IMapElement element in elements)
             {
-                IMKOverlay overlay = null;
+                IMKOverlay? overlay = null;
                 switch (element)
                 {
                     case IGeoPathMapElement geoPathElement:
@@ -267,12 +267,20 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             }
         }
 
-        private T GetMapElement<T>(IMKOverlay mkPolyline) where T : MKOverlayRenderer
+        private T? GetMapElement<T>(IMKOverlay mkPolyline) where T : MKOverlayRenderer
         {
-            this.handlerRef.TryGetTarget(out var handler);
-            IMap map = handler?.VirtualView;
-            IMapElement mapElement = default!;
-            for (var i = 0; i < map?.Elements.Count; i++)
+            if (!this.handlerRef.TryGetTarget(out var handler))
+            {
+                return null;
+            }
+
+            if (handler.VirtualView is not IMap map)
+            {
+                return null;
+            }
+
+            IMapElement? mapElement = null;
+            for (var i = 0; i < map.Elements.Count; i++)
             {
                 var element = map.Elements[i];
                 if (ReferenceEquals(element.MapElementId, mkPolyline))
@@ -309,8 +317,8 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
             if (mapView.handlerRef.TryGetTarget(out var handler))
             {
-                IMap map = handler?.VirtualView;
-                map?.Clicked(new Location(tapGPS.Latitude, tapGPS.Longitude));
+                IMap map = handler.VirtualView;
+                map.Clicked(new Location(tapGPS.Latitude, tapGPS.Longitude));
             }
         }
 

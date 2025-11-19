@@ -7,14 +7,14 @@ namespace Superdev.Maui.Maps.Platforms.Extensions
     {
         internal static UIImage LoadImage(this ImageSource imageSource, IMauiContext mauiContext)
         {
-            UIImage image = null;
+            UIImage? image = null;
 
             imageSource.LoadImage(mauiContext, result =>
             {
                 image = result?.Value;
             });
 
-            return image;
+            return image!;
         }
     }
 }

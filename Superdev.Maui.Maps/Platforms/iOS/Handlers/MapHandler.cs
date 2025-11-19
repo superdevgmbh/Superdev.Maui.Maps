@@ -52,7 +52,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
         private static readonly Lazy<CLLocationManager> LazyLocationManager = new Lazy<CLLocationManager>(() => new CLLocationManager());
         public static CLLocationManager LocationManager => LazyLocationManager.Value;
 
-        private object lastTouchedView;
+        private object? lastTouchedView;
 
         internal List<IMKAnnotation> Markers { get; } = new List<IMKAnnotation>(); // TODO: REMOVE
 
@@ -60,7 +60,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
         {
         }
 
-        public MapHandler(IPropertyMapper mapper = null, CommandMapper commandMapper = null)
+        public MapHandler(IPropertyMapper? mapper = null, CommandMapper? commandMapper = null)
             : base(mapper ?? Mapper, commandMapper ?? CommandMapper)
         {
         }
@@ -89,21 +89,21 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             ImageCache.Clear();
 		}
 
-        private MKAnnotationView GetViewForAnnotations(MKMapView mapView, NSObject annotationObj)
+        private MKAnnotationView? GetViewForAnnotations(MKMapView? mapView, NSObject? annotationObj)
         {
             if (annotationObj == null)
             {
-                return null!;
+                return null;
             }
 
             if (annotationObj is MKUserLocation)
             {
-                return null!;
+                return null;
             }
 
             if (annotationObj is not IMKAnnotation annotation)
             {
-                return null!;
+                return null;
             }
 
             // https://bugzilla.xamarin.com/show_bug.cgi?id=26416
@@ -145,11 +145,11 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             return annotationView;
         }
 
-        protected virtual MKAnnotationView GetViewForAnnotations(MKMapView mapView, IMKAnnotation annotation)
+        protected virtual MKAnnotationView? GetViewForAnnotations(MKMapView? mapView, IMKAnnotation? annotation)
         {
-            MKAnnotationView annotationView = null;
+            MKAnnotationView? annotationView = null;
 
-            if (annotation is CustomPinAnnotation customAnnotation)
+            if (mapView != null && annotation is CustomPinAnnotation customAnnotation)
             {
                 annotationView = mapView.DequeueReusableAnnotation(ImagePinId) ?? new MKAnnotationView(annotation, ImagePinId);
                 annotationView.Image = customAnnotation.Image;

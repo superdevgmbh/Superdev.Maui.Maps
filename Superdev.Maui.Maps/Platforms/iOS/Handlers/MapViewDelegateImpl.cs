@@ -3,7 +3,7 @@ using MapKit;
 
 namespace Superdev.Maui.Maps.Platforms.Handlers
 {
-    public delegate MKAnnotationView GetViewForAnnotationDelegate(MKMapView mapView, NSObject annotation);
+    public delegate MKAnnotationView? GetViewForAnnotationDelegate(MKMapView? mapView, NSObject? annotation);
 
     public delegate void DidSelectAnnotationViewDelegate(MKMapView mapView, MKAnnotationView annotationView);
 
@@ -15,19 +15,15 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
     public class MapViewDelegateImpl : MKMapViewDelegate
     {
-        public MapViewDelegateImpl()
-        {
-        }
-
-        public RendererForOverlayDelegate RendererForOverlayDelegate { get; set; }
+        public RendererForOverlayDelegate? RendererForOverlayDelegate { get; set; }
 
         [Export("mapView:rendererForOverlay:")]
-        public new MKOverlayRenderer OverlayRenderer(MKMapView mapView, IMKOverlay overlay)
+        public new MKOverlayRenderer? OverlayRenderer(MKMapView mapView, IMKOverlay overlay)
         {
-            return this.RendererForOverlayDelegate.Invoke(mapView, overlay);
+            return this.RendererForOverlayDelegate?.Invoke(mapView, overlay);
         }
 
-        public RegionDidChangeAnimatedDelegate RegionDidChangeAnimatedDelegate { get; set; }
+        public RegionDidChangeAnimatedDelegate? RegionDidChangeAnimatedDelegate { get; set; }
 
         [Export("mapView:regionDidChangeAnimated:")]
         public new void RegionChanged(MKMapView mapView, bool animated)
@@ -35,7 +31,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             this.RegionDidChangeAnimatedDelegate?.Invoke(mapView, animated);
         }
 
-        public DidFinishRenderingMapDelegate DidFinishRenderingMapDelegate { get; set; }
+        public DidFinishRenderingMapDelegate? DidFinishRenderingMapDelegate { get; set; }
 
         [Export ("mapViewDidFinishRenderingMap:fullyRendered:")]
         public new void DidFinishRenderingMap(MKMapView mapView, bool fullyRendered)
@@ -43,7 +39,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             this.DidFinishRenderingMapDelegate?.Invoke(mapView, fullyRendered);
         }
 
-        public DidSelectAnnotationViewDelegate DidSelectAnnotationViewDelegate { get; set; }
+        public DidSelectAnnotationViewDelegate? DidSelectAnnotationViewDelegate { get; set; }
 
         [Export("mapView:didSelectAnnotationView:")]
         public new void DidSelectAnnotationView(MKMapView mapView, MKAnnotationView view)
@@ -51,10 +47,10 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             this.DidSelectAnnotationViewDelegate?.Invoke(mapView, view);
         }
 
-        public GetViewForAnnotationDelegate GetViewForAnnotationDelegate { get; set; }
+        public GetViewForAnnotationDelegate? GetViewForAnnotationDelegate { get; set; }
 
         [Export("mapView:viewForAnnotation:")]
-        public MKAnnotationView GetViewForAnnotation(MKMapView mapView, NSObject annotation)
+        public MKAnnotationView? GetViewForAnnotation(MKMapView? mapView, NSObject? annotation)
         {
             return this.GetViewForAnnotationDelegate?.Invoke(mapView, annotation);
         }

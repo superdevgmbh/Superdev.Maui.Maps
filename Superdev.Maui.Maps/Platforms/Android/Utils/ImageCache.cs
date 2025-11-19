@@ -12,7 +12,7 @@ namespace Superdev.Maui.Maps.Platforms.Utils
             var drawable = ImageSourceExtensions.LoadImage(imageSource, mauiContext);
 
             var canvas = new Canvas();
-            var bitmap = Bitmap.CreateBitmap(drawable.IntrinsicWidth, drawable.IntrinsicHeight, Bitmap.Config.Argb8888);
+            var bitmap = Bitmap.CreateBitmap(drawable.IntrinsicWidth, drawable.IntrinsicHeight, Bitmap.Config.Argb8888!);
             canvas.SetBitmap(bitmap);
 
             drawable.SetBounds(0, 0, drawable.IntrinsicWidth, drawable.IntrinsicHeight);

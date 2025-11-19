@@ -21,9 +21,8 @@ namespace MapsDemoApp.ViewModels
             IDialogService dialogService,
             IGeolocation geolocation,
             IParkingLotService parkingLotService,
-            IPreferences preferences,
-            IToastService toastService)
-            : base(logger, dialogService, geolocation, parkingLotService, preferences, toastService)
+            IPreferences preferences)
+            : base(logger, dialogService, geolocation, parkingLotService, preferences)
         {
         }
     }
@@ -38,7 +37,6 @@ namespace MapsDemoApp.ViewModels
         private readonly IGeolocation geolocation;
         private readonly IParkingLotService parkingLotService;
         private readonly IPreferences preferences;
-        private readonly IToastService toastService;
 
         private bool isShowingUser;
         private bool isTrafficEnabled;
@@ -50,21 +48,21 @@ namespace MapsDemoApp.ViewModels
         private Distance zoomLevel;
         private MapSpan visibleRegion;
 
-        private IAsyncRelayCommand getCurrentPositionCommand;
-        private IRelayCommand addPinCommand;
-        private IRelayCommand removePinCommand;
-        private IRelayCommand clearAllPinsCommand;
-        private IRelayCommand<ToggledEventArgs> isShowingUserToggledCommand;
+        private IAsyncRelayCommand? getCurrentPositionCommand;
+        private IRelayCommand? addPinCommand;
+        private IRelayCommand? removePinCommand;
+        private IRelayCommand? clearAllPinsCommand;
+        private IRelayCommand<ToggledEventArgs>? isShowingUserToggledCommand;
         private Location currentPosition;
-        private IAsyncRelayCommand appearingCommand;
+        private IAsyncRelayCommand? appearingCommand;
         private ObservableCollection<ParkingLotViewModel> parkingLots;
         private ParkingLotViewModel selectedParkingLot;
         private ObservableCollection<MapElement> mapElements = new ObservableCollection<MapElement>();
-        private IRelayCommand addPolygonsCommand;
-        private IRelayCommand addCirclesCommand;
-        private IRelayCommand clearMapElementsCommand;
-        private IRelayCommand addPolylinesCommand;
-        private IAsyncRelayCommand loadPinsCommand;
+        private IRelayCommand? addPolygonsCommand;
+        private IRelayCommand? addCirclesCommand;
+        private IRelayCommand? clearMapElementsCommand;
+        private IRelayCommand? addPolylinesCommand;
+        private IAsyncRelayCommand? loadPinsCommand;
         private MapType mapType;
         private MapType[] mapTypes;
         private LocationViewModel[] locations;
@@ -75,15 +73,13 @@ namespace MapsDemoApp.ViewModels
             IDialogService dialogService,
             IGeolocation geolocation,
             IParkingLotService parkingLotService,
-            IPreferences preferences,
-            IToastService toastService)
+            IPreferences preferences)
         {
             this.logger = logger;
             this.dialogService = dialogService;
             this.geolocation = geolocation;
             this.parkingLotService = parkingLotService;
             this.preferences = preferences;
-            this.toastService = toastService;
         }
 
         public IAsyncRelayCommand AppearingCommand
@@ -304,7 +300,7 @@ namespace MapsDemoApp.ViewModels
                 var parkingLots = await this.parkingLotService.GetAllAsync();
 
                 var parkingLotViewModels = parkingLots
-                    .Select(p => new ParkingLotViewModel(this.toastService, p.Name, p.Location))
+                    .Select(p => new ParkingLotViewModel(p.Name, p.Location))
                     .OrderBy(p => p.Name)
                     .ToObservableCollection();
 
@@ -324,7 +320,6 @@ namespace MapsDemoApp.ViewModels
         private void AddPin()
         {
             var parkingLotViewModel = new ParkingLotViewModel(
-                this.toastService,
                 "Test",
                 new Location(latitude: 46.7985624, longitude: 8.47552828101288));
 
@@ -338,8 +333,11 @@ namespace MapsDemoApp.ViewModels
 
         private void RemovePin()
         {
-            var parkingLotViewModels = this.ParkingLots.FirstOrDefault(p => p.Name == "Test");
-            this.ParkingLots.Remove(parkingLotViewModels);
+            var parkingLotViewModels = this.ParkingLots.Where(p => p.Name == "Test");
+            foreach (var parkingLotViewModel in parkingLotViewModels)
+            {
+                this.ParkingLots.Remove(parkingLotViewModel);
+            }
         }
 
         public IRelayCommand ClearAllPinsCommand

@@ -18,7 +18,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
         {
         }
 
-        public MapPinHandler(IPropertyMapper mapper = null)
+        public MapPinHandler(IPropertyMapper? mapper = null)
             : base(mapper ?? Mapper)
         {
         }

@@ -10,21 +10,18 @@ namespace MapsDemoApp.ViewModels
     {
         private readonly ILogger logger;
         private readonly INavigationService navigationService;
-        private readonly IDialogService dialogService;
         private readonly ILauncher launcher;
 
-        private IAsyncRelayCommand<string> navigateToPageCommand;
-        private IAsyncRelayCommand<string> openUrlCommand;
+        private IAsyncRelayCommand<string>? navigateToPageCommand;
+        private IAsyncRelayCommand<string>? openUrlCommand;
 
         public MainViewModel(
             ILogger<MainViewModel> logger,
             INavigationService navigationService,
-            IDialogService dialogService,
             ILauncher launcher)
         {
             this.logger = logger;
             this.navigationService = navigationService;
-            this.dialogService = dialogService;
             this.launcher = launcher;
         }
 

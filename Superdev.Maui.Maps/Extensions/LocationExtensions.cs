@@ -10,7 +10,7 @@ namespace Superdev.Maui.Maps.Extensions
             return location == null || double.IsNaN(location.Longitude) || double.IsNaN(location.Latitude);
         }
 
-        public static Location GetCenterLocation(this IEnumerable<Location> locations)
+        public static Location? GetCenterLocation(this IEnumerable<Location> locations)
         {
             if (locations == null || !locations.Any())
             {

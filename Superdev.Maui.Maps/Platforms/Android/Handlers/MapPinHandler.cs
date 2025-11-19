@@ -17,7 +17,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
         {
         }
 
-        public MapPinHandler(IPropertyMapper mapper = null)
+        public MapPinHandler(IPropertyMapper? mapper = null)
             : base(mapper ?? Mapper)
         {
         }
@@ -43,16 +43,18 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                     return;
                 }
 
-                var marker = mapHandler.markers.FirstOrDefault(m => m.Id == markerId);
-
-                if (pin.ImageSource is ImageSource imageSource)
+                var marker = mapHandler.markers?.FirstOrDefault(m => m.Id == markerId);
+                if (marker != null)
                 {
-                    var image = MapHandler.ImageCache.GetImage(imageSource, mauiContext);
-                    marker.SetIcon(image);
-                }
-                else
-                {
-                    marker.SetIcon(null);
+                    if (pin.ImageSource is ImageSource imageSource)
+                    {
+                        var image = MapHandler.ImageCache.GetImage(imageSource, mauiContext);
+                        marker.SetIcon(image);
+                    }
+                    else
+                    {
+                        marker.SetIcon(null);
+                    }
                 }
             }
         }

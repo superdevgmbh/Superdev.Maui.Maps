@@ -4,10 +4,6 @@ namespace Superdev.Maui.Maps.Controls
 {
     public class Pin : Microsoft.Maui.Controls.Maps.Pin
     {
-        public Pin()
-        {
-        }
-
         public static readonly BindableProperty ImageSourceProperty = BindableProperty.Create(
             nameof(ImageSource),
             typeof(ImageSource),

@@ -7,9 +7,9 @@ namespace Superdev.Maui.Maps.Platforms.Extensions
 {
     public static class MapExtensions
     {
-        public static Pin GetPinForMarker(this Map map, Marker marker)
+        public static Pin? GetPinForMarker(this Map map, Marker marker)
         {
-            Pin targetPin = null;
+            Pin? targetPin = null;
 
             foreach (var pin in map.Pins)
             {

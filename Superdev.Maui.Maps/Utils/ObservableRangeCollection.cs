@@ -76,10 +76,7 @@ namespace Superdev.Maui.Maps.Utils
                 throw new ArgumentException("Mode must be either Remove or Reset for RemoveRange.", nameof(notificationMode));
             }
 
-            if (collection == null)
-            {
-                throw new ArgumentNullException(nameof(collection));
-            }
+            ArgumentNullException.ThrowIfNull(collection);
 
             this.CheckReentrancy();
 
@@ -165,7 +162,7 @@ namespace Superdev.Maui.Maps.Utils
             return itemAdded;
         }
 
-        private void RaiseChangeNotificationEvents(NotifyCollectionChangedAction action, List<T> changedItems = null, int startingIndex = -1)
+        private void RaiseChangeNotificationEvents(NotifyCollectionChangedAction action, List<T>? changedItems = null, int startingIndex = -1)
         {
             this.OnPropertyChanged(new PropertyChangedEventArgs(nameof(this.Count)));
             this.OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));

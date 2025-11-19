@@ -7,17 +7,17 @@ namespace Superdev.Maui.Maps.Converters
     {
         private static readonly HashSet<string> SupportedUnits = ["m", "km", "mi"];
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             return TryConvert(value, parameter);
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             return TryConvert(value, parameter);
         }
 
-        private static object TryConvert(object value, object parameter)
+        private static object TryConvert(object? value, object? parameter)
         {
             if (parameter is not string unit || !SupportedUnits.Contains(unit))
             {

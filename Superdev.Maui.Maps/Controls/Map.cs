@@ -21,7 +21,7 @@ namespace Superdev.Maui.Maps.Controls
 
         private readonly ObservableRangeCollection<Pin> pins = new();
         private readonly Queue<MapMoveRequest> moveRequests = new();
-        private MapMoveRequest lastMoveRequest;
+        private MapMoveRequest? lastMoveRequest;
         private bool shouldMoveToRegion = true;
 
         /// <summary>
@@ -165,11 +165,10 @@ namespace Superdev.Maui.Maps.Controls
         public static readonly BindableProperty CenterPositionProperty =
             BindableProperty.Create(
                 nameof(CenterPosition),
-                typeof(Location), typeof(Map),
-                null,
-                BindingMode.TwoWay,
-                null,
-                OnCenterPositionPropertyChanged);
+                typeof(Location),
+                typeof(Map),
+                defaultBindingMode: BindingMode.TwoWay,
+                propertyChanged: OnCenterPositionPropertyChanged);
 
         private static void OnCenterPositionPropertyChanged(BindableObject bindable, object oldValue, object newValue)
         {
@@ -193,8 +192,7 @@ namespace Superdev.Maui.Maps.Controls
             nameof(VisibleRegion),
             typeof(MapSpan),
             typeof(Map),
-            null,
-            BindingMode.TwoWay,
+            defaultBindingMode: BindingMode.TwoWay,
             propertyChanged: OnVisibleRegionPropertyChanged);
 
         private static void OnVisibleRegionPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -211,9 +209,9 @@ namespace Superdev.Maui.Maps.Controls
         /// <summary>
         /// Gets the currently visible region of the map.
         /// </summary>
-        public MapSpan VisibleRegion
+        public MapSpan? VisibleRegion
         {
-            get => (MapSpan)this.GetValue(VisibleRegionProperty);
+            get => (MapSpan?)this.GetValue(VisibleRegionProperty);
             set => this.SetValue(VisibleRegionProperty, value);
         }
 
@@ -230,7 +228,7 @@ namespace Superdev.Maui.Maps.Controls
             typeof(Distance),
             typeof(Map),
             default(Distance),
-            BindingMode.TwoWay,
+            defaultBindingMode: BindingMode.TwoWay,
             coerceValue: (_, v) =>
             {
                 var zoomLevel = (Distance)v;
@@ -273,9 +271,9 @@ namespace Superdev.Maui.Maps.Controls
             nameof(ItemsSource),
             typeof(IEnumerable),
             typeof(Map),
-            propertyChanged: (b, o, n) => ((Map)b).OnItemsSourcePropertyChanged((IEnumerable)o, (IEnumerable)n));
+            propertyChanged: (b, o, n) => ((Map)b).OnItemsSourcePropertyChanged((IEnumerable?)o, (IEnumerable?)n));
 
-        private async void OnItemsSourcePropertyChanged(IEnumerable oldItemsSource, IEnumerable newItemsSource)
+        private async void OnItemsSourcePropertyChanged(IEnumerable? oldItemsSource, IEnumerable? newItemsSource)
         {
             if (oldItemsSource is INotifyCollectionChanged ncc)
             {
@@ -292,7 +290,7 @@ namespace Superdev.Maui.Maps.Controls
             this.Handler?.UpdateValue(nameof(IMap.Pins));
         }
 
-        private void OnItemsSourceCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnItemsSourceCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
@@ -326,9 +324,9 @@ namespace Superdev.Maui.Maps.Controls
         /// <summary>
         /// Gets or sets the collection of objects that represent pins on the map.
         /// </summary>
-        public IEnumerable ItemsSource
+        public IEnumerable? ItemsSource
         {
-            get => (IEnumerable)this.GetValue(ItemsSourceProperty);
+            get => (IEnumerable?)this.GetValue(ItemsSourceProperty);
             set => this.SetValue(ItemsSourceProperty, value);
         }
 
@@ -338,7 +336,7 @@ namespace Superdev.Maui.Maps.Controls
             typeof(Map),
             defaultBindingMode: BindingMode.TwoWay);
 
-        public object SelectedItem
+        public object? SelectedItem
         {
             get => this.GetValue(SelectedItemProperty);
             set => this.SetValue(SelectedItemProperty, value);
@@ -348,9 +346,9 @@ namespace Superdev.Maui.Maps.Controls
             nameof(ItemTemplate),
             typeof(DataTemplate),
             typeof(Map),
-            propertyChanged: (b, o, n) => ((Map)b).OnItemTemplatePropertyChanged((DataTemplate)o, (DataTemplate)n));
+            propertyChanged: (b, o, n) => ((Map)b).OnItemTemplatePropertyChanged((DataTemplate?)o, (DataTemplate?)n));
 
-        private void OnItemTemplatePropertyChanged(DataTemplate oldItemTemplate, DataTemplate newItemTemplate)
+        private void OnItemTemplatePropertyChanged(DataTemplate? oldItemTemplate, DataTemplate? newItemTemplate)
         {
             if (newItemTemplate is DataTemplateSelector)
             {
@@ -367,9 +365,9 @@ namespace Superdev.Maui.Maps.Controls
         /// <summary>
         /// Gets or sets the template that is to be applied to each object in <see cref="ItemsSource"/>.
         /// </summary>
-        public DataTemplate ItemTemplate
+        public DataTemplate? ItemTemplate
         {
-            get => (DataTemplate)this.GetValue(ItemTemplateProperty);
+            get => (DataTemplate?)this.GetValue(ItemTemplateProperty);
             set => this.SetValue(ItemTemplateProperty, value);
         }
 
@@ -389,9 +387,9 @@ namespace Superdev.Maui.Maps.Controls
         /// <summary>
         /// Gets or sets the object that selects the template that is to be applied to each object in <see cref="ItemsSource"/>.
         /// </summary>
-        public DataTemplateSelector ItemTemplateSelector
+        public DataTemplateSelector? ItemTemplateSelector
         {
-            get => (DataTemplateSelector)this.GetValue(ItemTemplateSelectorProperty);
+            get => (DataTemplateSelector?)this.GetValue(ItemTemplateSelectorProperty);
             set => this.SetValue(ItemTemplateSelectorProperty, value);
         }
 
@@ -425,7 +423,7 @@ namespace Superdev.Maui.Maps.Controls
             }
         }
 
-        private void MapElementsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void MapElementsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             this.Handler?.UpdateValue(nameof(IMap.Elements));
 
@@ -446,7 +444,7 @@ namespace Superdev.Maui.Maps.Controls
             }
         }
 
-        private void MapElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void MapElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (sender is MapElement mapElement)
             {
@@ -459,9 +457,9 @@ namespace Superdev.Maui.Maps.Controls
         /// <summary>
         /// Gets the elements (pins, polygons, polylines, etc.) currently added to this map.
         /// </summary>
-        public IList<MapElement> MapElements
+        public IList<MapElement>? MapElements
         {
-            get => (IList<MapElement>)this.GetValue(MapElementsProperty);
+            get => (IList<MapElement>?)this.GetValue(MapElementsProperty);
             set => this.SetValue(MapElementsProperty, value);
         }
 
@@ -532,7 +530,7 @@ namespace Superdev.Maui.Maps.Controls
             }
         }
 
-        private void MoveToRegionInternal(MapMoveRequest moveRequest)
+        private void MoveToRegionInternal(MapMoveRequest? moveRequest)
         {
             this.lastMoveRequest = moveRequest;
 
@@ -548,19 +546,22 @@ namespace Superdev.Maui.Maps.Controls
             return this.GetEnumerator();
         }
 
-        private IEnumerable<Pin> CreatePins(IEnumerable source)
+        private IEnumerable<Pin> CreatePins(IEnumerable? source)
         {
-            if (this.ItemsSource == null || (this.ItemTemplate == null && this.ItemTemplateSelector == null))
+            if (source is null || this.ItemsSource == null || (this.ItemTemplate == null && this.ItemTemplateSelector == null))
             {
                 return Enumerable.Empty<Pin>();
             }
 
             var itemTemplate = this.ItemTemplate;
-            var pins = source.Cast<object>().Select(p => this.CreatePin(p, itemTemplate));
+            var pins = source.Cast<object>()
+                .Select(p => this.CreatePin(p, itemTemplate))
+                .Where(p => p is not null)
+                .Select(p => p!);
             return pins;
         }
 
-        private Pin CreatePin(object newItem, DataTemplate itemTemplate)
+        private Pin? CreatePin(object newItem, DataTemplate? itemTemplate)
         {
             if (itemTemplate is null)
             {
@@ -580,7 +581,7 @@ namespace Superdev.Maui.Maps.Controls
 
         IList<IMapElement> IMap.Elements
         {
-            get => this.MapElements?.Cast<IMapElement>().ToList();
+            get => this.MapElements?.Cast<IMapElement>().ToList() ?? new List<IMapElement>();
         }
 
         IList<IMapPin> IMap.Pins => this.pins.Cast<IMapPin>().ToList();
