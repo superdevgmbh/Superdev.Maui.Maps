@@ -5,6 +5,11 @@ using Xunit;
 
 namespace Superdev.Maui.Maps.Tests.Extensions
 {
+    /// <summary>
+    /// Tests related to location extension methods.
+    /// Helpful tool is https://www.luftlinie.org/Luzern,CHE/Zug,CHE
+    /// to verify if distance calculations are correct.
+    /// </summary>
     public class LocationExtensionsTests
     {
         [Theory]
