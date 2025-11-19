@@ -10,15 +10,30 @@ namespace Superdev.Maui.Maps.Extensions
             return location == null || double.IsNaN(location.Longitude) || double.IsNaN(location.Latitude);
         }
 
-        public static Location? GetCenterLocation(this IEnumerable<Location> locations)
+        public static Location? GetCenterLocation(this IEnumerable<Location>? locations)
         {
-            if (locations == null || !locations.Any())
+            if (locations == null)
             {
                 return null;
             }
 
-            var centerLocation = new Location(locations.Average(p => p.Latitude), locations.Average(p => p.Longitude));
-            return centerLocation;
+            var locationsArray = locations
+                .Where(l => !l.IsUnknown())
+                .ToArray();
+
+            if (locationsArray.Length == 0)
+            {
+                return null;
+            }
+
+            return locationsArray.GetCenterLocationInternal();
+        }
+
+        private static Location GetCenterLocationInternal(this Location[] locations)
+        {
+            return new Location(
+                latitude: locations.Average(p => p.Latitude),
+                longitude: locations.Average(p => p.Longitude));
         }
 
         public static Location WithLatitudeOffset(this Location position, double latitudeOffset)
@@ -43,17 +58,32 @@ namespace Superdev.Maui.Maps.Extensions
         /// Calculates the maximum distance between the given <paramref name="locations"/>
         /// </summary>
         /// <param name="locations">The locations.</param>
-        /// <param name="mode">Calculation method.</param>
+        /// <param name="calculationMode">Calculation method.</param>
         /// <returns>The maximum distance between locations.</returns>
-        public static Distance? CalculateDistance(this IEnumerable<Location> locations, DistanceCalculationMode mode = DistanceCalculationMode.BoundingBox)
+        public static Distance? CalculateDistance(this IEnumerable<Location>? locations, DistanceCalculationMode calculationMode = DistanceCalculationMode.BoundingBox)
         {
-            if (locations == null || !locations.Any())
+            if (locations == null)
             {
                 return null;
             }
 
+            var locationsArray = locations
+                .Where(l => !l.IsUnknown())
+                .ToArray();
+
+            if (locationsArray.Length == 0)
+            {
+                return null;
+            }
+
+            return locationsArray.CalculateDistanceInternal(calculationMode);
+        }
+
+        private static Distance CalculateDistanceInternal(this Location[] locations, DistanceCalculationMode calculationMode)
+        {
             Distance distance;
-            switch (mode)
+
+            switch (calculationMode)
             {
                 case DistanceCalculationMode.MaxDistanceFromCenter:
                     distance = CalculateDistanceFromCenter(locations);
@@ -67,7 +97,7 @@ namespace Superdev.Maui.Maps.Extensions
             return distance;
         }
 
-        private static Distance CalculateDistanceBoundingBox(IEnumerable<Location> locations)
+        private static Distance CalculateDistanceBoundingBox(Location[] locations)
         {
             var minLat = locations.Min(l => l.Latitude);
             var maxLat = locations.Max(l => l.Latitude);
@@ -77,13 +107,12 @@ namespace Superdev.Maui.Maps.Extensions
             var northeast = new Location(maxLat, maxLon);
             var southwest = new Location(minLat, minLon);
 
-            // diagonal = full distance
             var diagonalKm = Location.CalculateDistance(northeast, southwest, DistanceUnits.Kilometers);
 
             return Distance.FromKilometers(diagonalKm);
         }
 
-        private static Distance CalculateDistanceFromCenter(IEnumerable<Location> locations)
+        private static Distance CalculateDistanceFromCenter(Location[] locations)
         {
             var center = new Location(
                 locations.Average(l => l.Latitude),
@@ -95,33 +124,29 @@ namespace Superdev.Maui.Maps.Extensions
         }
 
         public static MapSpan? GetVisibleRegion(
-            this IEnumerable<Location> locations,
+            this IEnumerable<Location>? locations,
             Distance? minimumRadius = null,
             Distance? maximumRadius = null,
-            DistanceCalculationMode mode = DistanceCalculationMode.BoundingBox)
+            DistanceCalculationMode calculationMode = DistanceCalculationMode.BoundingBox)
         {
-            if (locations == null || !locations.Any())
+            if (locations == null)
             {
                 return null;
             }
 
-            var center = locations.GetCenterLocation();
-            if (center == null)
+            var locationsArray = locations
+                .Where(l => !l.IsUnknown())
+                .ToArray();
+
+            if (locationsArray.Length == 0)
             {
                 return null;
             }
 
-            // Get full distance between farthest points
-            var fullDistance = locations.CalculateDistance(mode);
-            if (fullDistance == null)
-            {
-                return null;
-            }
+            var maxDistanceBetweenLocations = locationsArray.CalculateDistanceInternal(calculationMode);
 
-            // Convert to radius
-            var radiusKm = fullDistance.Value.Kilometers / 2;
+            var radiusKm = maxDistanceBetweenLocations.Kilometers / 2;
 
-            // Apply constraints
             if (minimumRadius != null)
             {
                 radiusKm = Math.Max(radiusKm, minimumRadius.Value.Kilometers);
@@ -131,6 +156,8 @@ namespace Superdev.Maui.Maps.Extensions
             {
                 radiusKm = Math.Min(radiusKm, maximumRadius.Value.Kilometers);
             }
+
+            var center = locationsArray.GetCenterLocationInternal();
 
             return MapSpan.FromCenterAndRadius(
                 center,

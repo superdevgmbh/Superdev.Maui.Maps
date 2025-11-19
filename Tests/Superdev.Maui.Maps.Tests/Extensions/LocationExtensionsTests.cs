@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.Maui.Maps;
 using Superdev.Maui.Maps.Extensions;
+using Superdev.Maui.Maps.Tests.TestData;
 using Xunit;
 
 namespace Superdev.Maui.Maps.Tests.Extensions
@@ -98,6 +99,9 @@ namespace Superdev.Maui.Maps.Tests.Extensions
                     ],
                     null, null, DistanceCalculationMode.BoundingBox,
                     MapSpan.FromCenterAndRadius(new Location(47.111450000000005d, 8.4118999999999993d), Distance.FromKilometers(10.47686587514738d)));
+                this.Add(Locations.GetTestLocations(),
+                    null, null, DistanceCalculationMode.BoundingBox,
+                    MapSpan.FromCenterAndRadius(new Location(47.178222709019167d, 8.4811581762892665d), Distance.FromKilometers(60.743082413959144d)));
             }
         }
     }
