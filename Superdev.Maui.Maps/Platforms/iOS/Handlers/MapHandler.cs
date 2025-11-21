@@ -385,12 +385,12 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
         private void MoveToRegion(MapSpan mapSpan, bool animated)
         {
             var center = mapSpan.Center;
-            var mapRegion = new MKCoordinateRegion(
+            var region = new MKCoordinateRegion(
                 center: new CLLocationCoordinate2D(center.Latitude, center.Longitude),
                 span: new MKCoordinateSpan(mapSpan.LatitudeDegrees, mapSpan.LongitudeDegrees));
 
             var mapView = this.PlatformView;
-            mapView.Map.SetRegion(mapRegion, animated);
+            mapView.Map.SetRegion(region, animated);
         }
 
         public void UpdateMapElement(IMapElement element)

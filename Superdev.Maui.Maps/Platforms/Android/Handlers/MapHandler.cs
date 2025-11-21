@@ -483,7 +483,8 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
         private void MoveToRegion(MapSpan mapSpan, bool animated)
         {
             this.lastMoveToRegion = mapSpan;
-            if (this.GoogleMap == null)
+
+            if (this.GoogleMap is not GoogleMap googleMap)
             {
                 return;
             }
@@ -496,11 +497,11 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             {
                 if (animated)
                 {
-                    this.GoogleMap.AnimateCamera(cameraUpdate);
+                    googleMap.AnimateCamera(cameraUpdate);
                 }
                 else
                 {
-                    this.GoogleMap.MoveCamera(cameraUpdate);
+                    googleMap.MoveCamera(cameraUpdate);
                 }
             }
             catch (IllegalStateException exc)
@@ -595,16 +596,20 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         private void AddPins(IList pins)
         {
-            var stopwatch = Stopwatch.StartNew();
             this.pins = pins;
 
-            if (this.GoogleMap is not GoogleMap googleMap ||
-                this.MauiContext is not IMauiContext mauiContext)
+            if (this.GoogleMap is not GoogleMap googleMap)
             {
-                // Mapper could be called before we have a Map ready
+                // Mapper could be called before we have the GoogleMap ready
                 return;
             }
 
+            if (this.MauiContext is not IMauiContext mauiContext)
+            {
+                return;
+            }
+
+            var stopwatch = Stopwatch.StartNew();
             this.markers ??= new List<Marker>();
 
             foreach (var pin in pins.Cast<IMapPin>())
@@ -684,7 +689,12 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
         {
             this.elements = mapElements;
 
-            if (this.GoogleMap == null || this.MauiContext == null)
+            if (this.GoogleMap is not GoogleMap googleMap)
+            {
+                return;
+            }
+
+            if (this.MauiContext is not IMauiContext mauiContext)
             {
                 return;
             }
@@ -695,40 +705,30 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                 {
                     if (element is IFilledMapElement)
                     {
-                        this.AddPolygon(geoPath);
+                        this.AddPolygon(mauiContext, googleMap, geoPath);
                     }
                     else
                     {
-                        this.AddPolyline(geoPath);
+                        this.AddPolyline(mauiContext, googleMap, geoPath);
                     }
                 }
 
                 if (element is ICircleMapElement circle)
                 {
-                    this.AddCircle(circle);
+                    this.AddCircle(mauiContext, googleMap, circle);
                 }
             }
 
             this.elements = null;
         }
 
-        private void AddPolyline(IGeoPathMapElement polyline)
+        private void AddPolyline(IMauiContext mauiContext, GoogleMap googleMap, IGeoPathMapElement polyline)
         {
-            var map = this.GoogleMap;
-            if (map == null)
-            {
-                return;
-            }
+            this.polylines ??= new List<APolyline>();
 
-            if (this.polylines == null)
+            if (polyline.ToHandler(mauiContext)?.PlatformView is PolylineOptions options)
             {
-                this.polylines = new List<APolyline>();
-            }
-
-            var options = polyline.ToHandler(this.MauiContext!)?.PlatformView as PolylineOptions;
-            if (options != null)
-            {
-                var nativePolyline = map.AddPolyline(options);
+                var nativePolyline = googleMap.AddPolyline(options);
 
                 polyline.MapElementId = nativePolyline.Id;
 
@@ -736,52 +736,33 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             }
         }
 
-        private void AddPolygon(IGeoPathMapElement polygon)
+        private void AddPolygon(IMauiContext mauiContext, GoogleMap googleMap, IGeoPathMapElement polygon)
         {
-            var map = this.GoogleMap;
-            if (map == null)
-            {
-                return;
-            }
+            this.polygons ??= new List<APolygon>();
 
-            if (this.polygons == null)
-            {
-                this.polygons = new List<APolygon>();
-            }
-
-            var options = polygon.ToHandler(this.MauiContext!)?.PlatformView as PolygonOptions;
+            var options = polygon.ToHandler(mauiContext)?.PlatformView as PolygonOptions;
             if (options is null)
             {
                 throw new Exception("PolygonOptions is null");
             }
 
-            var nativePolygon = map.AddPolygon(options);
+            var nativePolygon = googleMap.AddPolygon(options);
 
             polygon.MapElementId = nativePolygon.Id;
 
             this.polygons.Add(nativePolygon);
         }
 
-        private void AddCircle(ICircleMapElement circle)
+        private void AddCircle(IMauiContext mauiContext, GoogleMap googleMap, ICircleMapElement circle)
         {
-            var map = this.GoogleMap;
-            if (map == null)
-            {
-                return;
-            }
+            this.circles ??= new List<ACircle>();
 
-            if (this.circles == null)
-            {
-                this.circles = new List<ACircle>();
-            }
-
-            var options = circle.ToHandler(this.MauiContext!)?.PlatformView as CircleOptions;
-            if (options is null)
+            if (circle.ToHandler(mauiContext)?.PlatformView is not CircleOptions options)
             {
                 throw new Exception("CircleOptions is null");
             }
 
-            var nativeCircle = map.AddCircle(options);
+            var nativeCircle = googleMap.AddCircle(options);
 
             circle.MapElementId = nativeCircle.Id;
 
