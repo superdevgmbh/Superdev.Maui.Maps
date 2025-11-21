@@ -1,6 +1,7 @@
 1.1
 - Enable nullability of reference types.
 - Add extension method for CalculateDistance and GetVisibleRegion from a list of locations.
+- Add pins to map only if Pin.Location is valid.
 
 1.0
 - Initial release.
