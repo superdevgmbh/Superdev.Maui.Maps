@@ -14,6 +14,7 @@ using Microsoft.Maui.Platform;
 using Microsoft.Maui.Maps;
 using Microsoft.Maui.Maps.Handlers;
 using Superdev.Maui.Maps.Controls;
+using Superdev.Maui.Maps.Extensions;
 using Superdev.Maui.Maps.Platforms.Extensions;
 using Superdev.Maui.Maps.Platforms.Utils;
 using Superdev.Maui.Maps.Utils;
@@ -489,8 +490,14 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                 return;
             }
 
-            var ne = new LatLng(mapSpan.Center.Latitude + mapSpan.LatitudeDegrees / 2, mapSpan.Center.Longitude + mapSpan.LongitudeDegrees / 2);
-            var sw = new LatLng(mapSpan.Center.Latitude - mapSpan.LatitudeDegrees / 2, mapSpan.Center.Longitude - mapSpan.LongitudeDegrees / 2);
+            var centerLocation = mapSpan.Center;
+            if (centerLocation.IsUnknown())
+            {
+                return;
+            }
+            
+            var ne = new LatLng(centerLocation.Latitude + mapSpan.LatitudeDegrees / 2, centerLocation.Longitude + mapSpan.LongitudeDegrees / 2);
+            var sw = new LatLng(centerLocation.Latitude - mapSpan.LatitudeDegrees / 2, centerLocation.Longitude - mapSpan.LongitudeDegrees / 2);
             var cameraUpdate = CameraUpdateFactory.NewLatLngBounds(new LatLngBounds(sw, ne), 0);
 
             try

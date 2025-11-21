@@ -109,9 +109,8 @@ namespace MapsDemoApp.ViewModels
                     new LocationViewModel(new Location(48.8534951d, 2.3483915d), "Paris"),
                     new LocationViewModel(new Location(-33.8698439d, 151.2082848d), "Sydney"),
                     new LocationViewModel(new Location(20.8029568d, -156.3106833d), "Maui"),
-                }
-                .OrderBy(l => l.Name)
-                .ToArray();
+                    new LocationViewModel(new Location(double.NaN, double.NaN), "Location(double.NaN, double.NaN)"),
+                };
 
                 await this.LoadPinsAsync();
 

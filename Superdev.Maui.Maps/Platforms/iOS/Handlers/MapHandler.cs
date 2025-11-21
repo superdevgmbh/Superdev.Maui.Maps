@@ -12,6 +12,7 @@ using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Maps;
 using ObjCRuntime;
 using Superdev.Maui.Maps.Controls;
+using Superdev.Maui.Maps.Extensions;
 using UIKit;
 using Superdev.Maui.Maps.Platforms.Extensions;
 using Superdev.Maui.Maps.Platforms.Utils;
@@ -384,9 +385,14 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         private void MoveToRegion(MapSpan mapSpan, bool animated)
         {
-            var center = mapSpan.Center;
+            var centerLocation = mapSpan.Center;
+            if (centerLocation.IsUnknown())
+            {
+                return;
+            }
+
             var region = new MKCoordinateRegion(
-                center: new CLLocationCoordinate2D(center.Latitude, center.Longitude),
+                center: new CLLocationCoordinate2D(centerLocation.Latitude, centerLocation.Longitude),
                 span: new MKCoordinateSpan(mapSpan.LatitudeDegrees, mapSpan.LongitudeDegrees));
 
             var mapView = this.PlatformView;

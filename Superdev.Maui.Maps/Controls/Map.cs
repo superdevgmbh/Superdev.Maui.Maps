@@ -524,9 +524,9 @@ namespace Superdev.Maui.Maps.Controls
                     await Task.Delay(delay);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Ignore
+                Trace.WriteLine($"ProcessMoveQueueAsync failed with exception : {ex}");
             }
         }
 
