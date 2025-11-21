@@ -17,7 +17,6 @@ using Superdev.Maui.Maps.Controls;
 using Superdev.Maui.Maps.Extensions;
 using Superdev.Maui.Maps.Platforms.Extensions;
 using Superdev.Maui.Maps.Platforms.Utils;
-using Superdev.Maui.Maps.Utils;
 using Exception = System.Exception;
 using IMap = Microsoft.Maui.Maps.IMap;
 using Map = Superdev.Maui.Maps.Controls.Map;
@@ -59,7 +58,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
         private MapReadyCallback? mapCallbackHandler;
         private MapSpan? lastMoveToRegion;
         internal List<Marker>? markers;
-        private IList? pins;
+        private IList<Pin>? pins;
         private IList? elements;
         private List<APolyline>? polylines;
         private List<APolygon>? polygons;
@@ -341,7 +340,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                 mapHandler.markers = null;
             }
 
-            mapHandler.AddPins((IList)map.Pins);
+            mapHandler.AddPins(map.Pins);
         }
 
         public static void MapElements(MapHandler handler, IMap map)
@@ -495,7 +494,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             {
                 return;
             }
-            
+
             var ne = new LatLng(centerLocation.Latitude + mapSpan.LatitudeDegrees / 2, centerLocation.Longitude + mapSpan.LongitudeDegrees / 2);
             var sw = new LatLng(centerLocation.Latitude - mapSpan.LatitudeDegrees / 2, centerLocation.Longitude - mapSpan.LongitudeDegrees / 2);
             var cameraUpdate = CameraUpdateFactory.NewLatLngBounds(new LatLngBounds(sw, ne), 0);
@@ -601,7 +600,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             map.Clicked(new Location(e.Point.Latitude, e.Point.Longitude));
         }
 
-        private void AddPins(IList pins)
+        private void AddPins(IList<Pin> pins)
         {
             this.pins = pins;
 
@@ -619,14 +618,25 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             var stopwatch = Stopwatch.StartNew();
             this.markers ??= new List<Marker>();
 
-            foreach (var pin in pins.Cast<IMapPin>())
+            var pinsWithLocation = pins
+                .Where(p => !p.Location.IsUnknown())
+                .ToArray();
+
+            if (pins.Count - pinsWithLocation.Length is var pinsWithUnknownLocation and > 0)
+            {
+                var suffix = (pinsWithUnknownLocation > 1 ? "s" : "");
+                Trace.WriteLine($"AddPins: {pinsWithUnknownLocation} pin{suffix} could not be added " +
+                                $"due to invalid location{suffix}.");
+            }
+
+            foreach (var pin in pinsWithLocation)
             {
                 var pinHandler = pin.ToHandler(mauiContext);
                 if (pinHandler is IMapPinHandler mapPinHandler)
                 {
                     var markerOptions = mapPinHandler.PlatformView;
 
-                    if (pin is Pin { ImageSource: ImageSource imageSource })
+                    if (pin.ImageSource is ImageSource imageSource)
                     {
                         try
                         {

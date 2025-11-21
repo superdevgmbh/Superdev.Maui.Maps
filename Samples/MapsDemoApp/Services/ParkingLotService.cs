@@ -640,7 +640,9 @@ namespace MapsDemoApp.Services
             new ParkingLot { Name = "Tannay", Location = new Location(46.3079854350357, 6.1807014749506655) },
             new ParkingLot { Name = "Pieterlen", Location = new Location(47.171449087655034, 7.3395734700472035) },
             new ParkingLot { Name = "Capolago-Riva S. Vitale", Location = new Location(45.90230854557929, 8.978494061736527) },
-            new ParkingLot { Name = "Lamone-Cadempino", Location = new Location(46.0388279354831, 8.932734241010783) }
+            new ParkingLot { Name = "Lamone-Cadempino", Location = new Location(46.0388279354831, 8.932734241010783) },
+            new ParkingLot { Name = "Location \"null\"", Location = null },
+            new ParkingLot { Name = "Location \"double.NaN\"", Location = new Location(double.NaN, double.NaN) }
         };
 
         public Task<ParkingLot[]> GetAllAsync(CancellationToken ct = default)

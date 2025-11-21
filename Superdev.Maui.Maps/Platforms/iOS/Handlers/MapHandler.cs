@@ -314,11 +314,11 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             mapView.Map.ZoomEnabled = map.IsZoomEnabled;
 		}
 
-		public static void MapPins(MapHandler handler, IMap map)
+		public static void MapPins(MapHandler handler, Map map)
         {
             var mapView = handler.PlatformView;
             mapView.RemoveAllAnnotations();
-            mapView.AddPins((IList)map.Pins);
+            mapView.AddPins(map.Pins);
         }
 
 		public static void MapElements(MapHandler handler, IMap map)

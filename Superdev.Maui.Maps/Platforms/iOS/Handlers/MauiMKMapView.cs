@@ -6,8 +6,8 @@ using Microsoft.Maui.Maps;
 using Microsoft.Maui.Maps.Handlers;
 using Microsoft.Maui.Platform;
 using Superdev.Maui.Maps.Controls;
+using Superdev.Maui.Maps.Extensions;
 using Superdev.Maui.Maps.Platforms.Extensions;
-using Superdev.Maui.Maps.Platforms.Utils;
 using UIKit;
 using IMap = Microsoft.Maui.Maps.IMap;
 using Map = Superdev.Maui.Maps.Controls.Map;
@@ -94,7 +94,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             }
         }
 
-        internal void AddPins(IList pins)
+        internal void AddPins(IList<Pin> pins)
         {
             var stopwatch = Stopwatch.StartNew();
 
@@ -104,7 +104,18 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                 return;
             }
 
-            foreach (Pin pin in pins)
+            var pinsWithLocation = pins
+                .Where(p => !p.Location.IsUnknown())
+                .ToArray();
+
+            if (pins.Count - pinsWithLocation.Length is var pinsWithUnknownLocation and > 0)
+            {
+                var suffix = (pinsWithUnknownLocation > 1 ? "s" : "");
+                Trace.WriteLine($"AddPins: {pinsWithUnknownLocation} pin{suffix} could not be added " +
+                                $"due to invalid location{suffix}.");
+            }
+
+            foreach (var pin in pinsWithLocation)
             {
                 if (pin.ToHandler(mauiContext) is IMapPinHandler mapPinHandler)
                 {
