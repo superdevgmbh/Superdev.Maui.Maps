@@ -346,9 +346,9 @@ namespace Superdev.Maui.Maps.Controls
             nameof(ItemTemplate),
             typeof(DataTemplate),
             typeof(Map),
-            propertyChanged: (b, o, n) => ((Map)b).OnItemTemplatePropertyChanged((DataTemplate?)o, (DataTemplate?)n));
+            propertyChanged: (b, o, n) => ((Map)b).OnItemTemplatePropertyChanged(o, n));
 
-        private void OnItemTemplatePropertyChanged(DataTemplate? oldItemTemplate, DataTemplate? newItemTemplate)
+        private void OnItemTemplatePropertyChanged(object? _, object? newItemTemplate)
         {
             if (newItemTemplate is DataTemplateSelector)
             {
@@ -414,11 +414,14 @@ namespace Superdev.Maui.Maps.Controls
                 ncc1.CollectionChanged += map.MapElementsCollectionChanged;
             }
 
-            if (newValue is IEnumerable<MapElement> mapElements)
+            if (map.MapElements is IList<MapElement> mapElements)
             {
-                foreach (var mapElement in mapElements)
+                if (newValue is IEnumerable<MapElement> newMapElements)
                 {
-                    map.MapElements.Add(mapElement);
+                    foreach (var mapElement in newMapElements)
+                    {
+                        mapElements.Add(mapElement);
+                    }
                 }
             }
         }
@@ -448,9 +451,13 @@ namespace Superdev.Maui.Maps.Controls
         {
             if (sender is MapElement mapElement)
             {
-                var index = this.MapElements.IndexOf(mapElement);
-                var args = new Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate(index, mapElement);
-                this.Handler?.Invoke(nameof(Microsoft.Maui.Maps.Handlers.IMapHandler.UpdateMapElement), args);
+                var index = this.MapElements?.IndexOf(mapElement);
+                if (index is int i)
+                {
+                    var args = new Microsoft.Maui.Maps.Handlers.MapElementHandlerUpdate(i, mapElement);
+                    this.Handler?.Invoke(nameof(Microsoft.Maui.Maps.Handlers.IMapHandler.UpdateMapElement), args);
+                }
+
             }
         }
 
@@ -466,7 +473,7 @@ namespace Superdev.Maui.Maps.Controls
         /// <summary>
         /// Occurs when the user clicks/taps on the map control.
         /// </summary>
-        public event EventHandler<MapClickedEventArgs> MapClicked;
+        public event EventHandler<MapClickedEventArgs>? MapClicked;
 
         /// <summary>
         /// Returns an enumerator of all the pins that are currently added to the map.
