@@ -123,10 +123,42 @@ namespace Superdev.Maui.Maps.Extensions
             return Distance.FromKilometers(radiusKm * 2);
         }
 
+        /// <summary>
+        /// Computes a <see cref="MapSpan"/> that fully contains all provided locations,
+        /// using the specified distance calculation mode. The resulting region can be
+        /// constrained by minimum and maximum radius limits and optionally expanded by
+        /// a padding factor.
+        /// </summary>
+        /// <param name="locations">
+        /// The collection of <see cref="Location"/> instances to include in the visible region.
+        /// Returns <c>null</c> if the collection is <c>null</c> or empty.
+        /// </param>
+        /// <param name="minimumRadius">
+        /// An optional minimum radius for the visible region. If the calculated radius
+        /// is smaller than this value, the minimum is applied instead.
+        /// </param>
+        /// <param name="maximumRadius">
+        /// An optional maximum radius for the visible region. If the calculated radius
+        /// is larger than this value, the maximum is applied instead.
+        /// </param>
+        /// <param name="padding">
+        /// An optional padding factor applied to the radius.
+        /// For example, <c>0.1</c> adds 10% extra space around the calculated region.
+        /// If <c>null</c>, no padding is applied.
+        /// </param>
+        /// <param name="calculationMode">
+        /// Determines how the full distance between locations is computed:
+        /// <see cref="DistanceCalculationMode.MaxDistanceFromCenter"/> or
+        /// <see cref="DistanceCalculationMode.BoundingBox"/>.
+        /// </param>
+        /// <returns>
+        /// A <see cref="MapSpan"/> that contains all locations, or <c>null</c> if no valid region can be calculated.
+        /// </returns>
         public static MapSpan? GetVisibleRegion(
             this IEnumerable<Location>? locations,
             Distance? minimumRadius = null,
             Distance? maximumRadius = null,
+            double? padding = null,
             DistanceCalculationMode calculationMode = DistanceCalculationMode.BoundingBox)
         {
             if (locations == null)
@@ -155,6 +187,11 @@ namespace Superdev.Maui.Maps.Extensions
             if (maximumRadius != null)
             {
                 radiusKm = Math.Min(radiusKm, maximumRadius.Value.Kilometers);
+            }
+
+            if (padding != null)
+            {
+                radiusKm *= (1 + padding.Value);
             }
 
             var center = locationsArray.GetCenterLocationInternal();

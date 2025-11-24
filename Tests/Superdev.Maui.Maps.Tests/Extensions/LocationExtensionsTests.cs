@@ -56,52 +56,52 @@ namespace Superdev.Maui.Maps.Tests.Extensions
         [Theory]
         [ClassData(typeof(GetVisibleRegionTestData))]
         public void ShouldGetVisibleRegion(
-            IEnumerable<Location> locations, Distance? minimumDistance, Distance? maximumDistance, DistanceCalculationMode calculationMode,
+            IEnumerable<Location> locations, Distance? minimumDistance, Distance? maximumDistance, double? padding, DistanceCalculationMode calculationMode,
             MapSpan? expectedVisibleRegion)
         {
             // Act
-            var visibleRegion = locations.GetVisibleRegion(minimumDistance, maximumDistance, calculationMode);
+            var visibleRegion = locations.GetVisibleRegion(minimumDistance, maximumDistance, padding, calculationMode);
 
             // Assert
             visibleRegion.Should().Be(expectedVisibleRegion);
         }
 
-        public class GetVisibleRegionTestData : TheoryData<IEnumerable<Location>, Distance?, Distance?, DistanceCalculationMode, MapSpan?>
+        public class GetVisibleRegionTestData : TheoryData<IEnumerable<Location>, Distance?, Distance?, double?, DistanceCalculationMode, MapSpan?>
         {
             public GetVisibleRegionTestData()
             {
-                this.Add([], null, null, DistanceCalculationMode.BoundingBox, null);
+                this.Add([], null, null, null, DistanceCalculationMode.BoundingBox, null);
 
                 this.Add([new Location(46.0d, 7.0d)],
-                    null, null, DistanceCalculationMode.BoundingBox,
+                    null, null, null, DistanceCalculationMode.BoundingBox,
                     new MapSpan(new Location(46.0d, 7.0d), 0d, 0d));
                 this.Add([
                         new Location(46.0d, 7.0d),
                         new Location(46.0d, 7.0d)
                     ],
-                    null, null, DistanceCalculationMode.BoundingBox,
+                    null, null, null, DistanceCalculationMode.BoundingBox,
                     new MapSpan(new Location(46.0d, 7.0d), 0d, 0d));
                 this.Add([
                         new Location(47.06367174034726d, 8.300092d),
                         new Location(47.075892d, 8.327706d)
                     ],
-                    null, null, DistanceCalculationMode.BoundingBox,
+                    null, null, null, DistanceCalculationMode.BoundingBox,
                     MapSpan.FromCenterAndRadius(new Location(47.069781870173628d, 8.3138989999999993d), Distance.FromKilometers(1.2470190809280386d)));
                 this.Add([
                         new Location(47.3744489d, 8.5410422d), // Zürich
                         new Location(46.9484742d, 7.4521749d) // Bern
                     ],
-                    null, null, DistanceCalculationMode.BoundingBox,
+                    null, null, null, DistanceCalculationMode.BoundingBox,
                     MapSpan.FromCenterAndRadius(new Location(47.161461549999999d, 7.9966085499999995d), Distance.FromKilometers(47.488342970385034d)));
                 this.Add([
                         new Location(47.050480d, 8.306350d), // Luzern
                         new Location(47.172420d, 8.517450d) // Zug
                     ],
-                    null, null, DistanceCalculationMode.BoundingBox,
+                    null, null, null, DistanceCalculationMode.BoundingBox,
                     MapSpan.FromCenterAndRadius(new Location(47.111450000000005d, 8.4118999999999993d), Distance.FromKilometers(10.47686587514738d)));
                 this.Add(Locations.GetTestLocations(),
-                    null, null, DistanceCalculationMode.BoundingBox,
-                    MapSpan.FromCenterAndRadius(new Location(47.178222709019167d, 8.4811581762892665d), Distance.FromKilometers(60.743082413959144d)));
+                    null, null, 0.1d, DistanceCalculationMode.BoundingBox,
+                    MapSpan.FromCenterAndRadius(new Location(47.178222709019167d, 8.4811581762892665d), Distance.FromKilometers(66.817390655355069d)));
             }
         }
     }
