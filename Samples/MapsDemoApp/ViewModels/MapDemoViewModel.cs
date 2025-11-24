@@ -67,6 +67,7 @@ namespace MapsDemoApp.ViewModels
         private MapType[] mapTypes;
         private LocationViewModel[] locations;
         private LocationViewModel selectedLocation;
+        private IRelayCommand<MapClickedEventArgs>? mapClickedCommand;
 
         public MapDemoViewModel(
             ILogger<MapDemoViewModel> logger,
@@ -390,6 +391,17 @@ namespace MapsDemoApp.ViewModels
         private void ClearMapElements()
         {
             this.MapElements.Clear();
+        }
+
+
+        public IRelayCommand MapClickedCommand
+        {
+            get => this.mapClickedCommand ??= new RelayCommand<MapClickedEventArgs>(this.MapClicked!);
+        }
+
+        private void MapClicked(MapClickedEventArgs e)
+        {
+            _ = this.dialogService.DisplayAlertAsync("MapClickedCommand", $"{e.Location.Latitude}, {e.Location.Longitude}", "OK");
         }
     }
 }

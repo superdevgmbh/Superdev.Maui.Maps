@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Windows.Input;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Maps;
 using Superdev.Maui.Maps.Extensions;
@@ -470,6 +471,47 @@ namespace Superdev.Maui.Maps.Controls
             set => this.SetValue(MapElementsProperty, value);
         }
 
+        void IMap.Clicked(Location location)
+        {
+            if (this.DeselectSelectedItemOnMapClick)
+            {
+                this.SelectedItem = null;
+            }
+
+            var mapClickedEventArgs = new MapClickedEventArgs(location);
+
+            if (this.MapClickedCommand is ICommand mapClickedCommand &&
+                mapClickedCommand.CanExecute(mapClickedEventArgs))
+            {
+                mapClickedCommand.Execute(mapClickedEventArgs);
+            }
+
+            this.MapClicked?.Invoke(this, mapClickedEventArgs);
+        }
+
+        public static readonly BindableProperty DeselectSelectedItemOnMapClickProperty = BindableProperty.Create(
+            nameof(DeselectSelectedItemOnMapClick),
+            typeof(bool),
+            typeof(Map),
+            false);
+
+        public bool DeselectSelectedItemOnMapClick
+        {
+            get => (bool)this.GetValue(DeselectSelectedItemOnMapClickProperty);
+            set => this.SetValue(DeselectSelectedItemOnMapClickProperty, value);
+        }
+
+        public static readonly BindableProperty MapClickedCommandProperty = BindableProperty.Create(
+            nameof(MapClickedCommand),
+            typeof(ICommand),
+            typeof(Map));
+
+        public ICommand MapClickedCommand
+        {
+            get => (ICommand)this.GetValue(MapClickedCommandProperty);
+            set => this.SetValue(MapClickedCommandProperty, value);
+        }
+
         /// <summary>
         /// Occurs when the user clicks/taps on the map control.
         /// </summary>
@@ -592,12 +634,6 @@ namespace Superdev.Maui.Maps.Controls
         }
 
         IList<IMapPin> IMap.Pins => this.pins.Cast<IMapPin>().ToList();
-
-        void IMap.Clicked(Location location)
-        {
-            this.MapClicked?.Invoke(this, new MapClickedEventArgs(location));
-        }
-
 
         /// <summary>
         /// Raised when the handler for this map control changed.
