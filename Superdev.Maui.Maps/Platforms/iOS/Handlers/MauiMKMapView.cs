@@ -110,7 +110,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
             if (pins.Count - pinsWithLocation.Length is var pinsWithUnknownLocation and > 0)
             {
-                var suffix = (pinsWithUnknownLocation > 1 ? "s" : "");
+                var suffix = pinsWithUnknownLocation > 1 ? "s" : "";
                 Trace.WriteLine($"AddPins: {pinsWithUnknownLocation} pin{suffix} could not be added " +
                                 $"due to invalid location{suffix}.");
             }
