@@ -36,7 +36,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                 return;
             }
 
-            if (pin.Map.TryGetTarget(out var map) && map.Handler is MapHandler mapHandler)
+            if (pin.TryGetMap(out var map) && map.Handler is MapHandler mapHandler)
             {
                 if (pin.MarkerId is not string markerId)
                 {
@@ -61,22 +61,9 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         private static void MapIsSelected(MapPinHandler mapPinHandler, Pin pin)
         {
-            if (pin.Map.TryGetTarget(out var map))
+            if (pin.TryGetMap(out var map) && map.Handler is MapHandler mapHandler)
             {
-                map.Handler?.UpdateValue(nameof(Pin.IsSelected));
-            }
-        }
-
-        public override void UpdateValue(string property)
-        {
-            base.UpdateValue(property);
-
-            if (property == Pin.IsSelectedProperty.PropertyName)
-            {
-            }
-            else if (property == Pin.ImageSourceProperty.PropertyName)
-            {
-                //this.UpdateImageSource(this.VirtualView);
+                mapHandler.UpdateValue(nameof(Pin.IsSelected));
             }
         }
     }

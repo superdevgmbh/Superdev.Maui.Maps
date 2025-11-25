@@ -1,4 +1,5 @@
-﻿using System.Windows.Input;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Windows.Input;
 
 namespace Superdev.Maui.Maps.Controls
 {
@@ -52,6 +53,18 @@ namespace Superdev.Maui.Maps.Controls
             set => this.SetValue(IsSelectedProperty, value);
         }
 
-        internal WeakReference<Map> Map { get; set; }
+        internal WeakReference<Map>? Map { private get; set; }
+
+        internal bool TryGetMap([NotNullWhen(true)] out Map? map)
+        {
+            if (this.Map is WeakReference<Map> mr && mr.TryGetTarget(out var m))
+            {
+                map = m;
+                return true;
+            }
+
+            map = null;
+            return false;
+        }
     }
 }

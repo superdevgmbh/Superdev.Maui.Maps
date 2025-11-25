@@ -3,7 +3,7 @@ using MapKit;
 
 namespace Superdev.Maui.Maps.Platforms.Handlers
 {
-    public delegate MKAnnotationView? GetViewForAnnotationDelegate(MKMapView? mapView, NSObject? annotation);
+    public delegate MKAnnotationView? GetViewForAnnotationDelegate(MauiMKMapView mapView, NSObject annotation);
 
     public delegate void DidSelectAnnotationViewDelegate(MKMapView mapView, MKAnnotationView annotationView);
 
@@ -50,7 +50,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
         public GetViewForAnnotationDelegate? GetViewForAnnotationDelegate { get; set; }
 
         [Export("mapView:viewForAnnotation:")]
-        public MKAnnotationView? GetViewForAnnotation(MKMapView? mapView, NSObject? annotation)
+        public MKAnnotationView? GetViewForAnnotation(MauiMKMapView mapView, NSObject annotation)
         {
             return this.GetViewForAnnotationDelegate?.Invoke(mapView, annotation);
         }

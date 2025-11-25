@@ -8,6 +8,6 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
     {
         public required Pin Pin { get; init; }
 
-        public UIImage Image { get; set; }
+        public UIImage? Image { get; set; }
     }
 }

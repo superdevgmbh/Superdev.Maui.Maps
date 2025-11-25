@@ -27,11 +27,11 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             this.handlerRef = new WeakReference<MapHandler>(mapHandler);
         }
 
-        public MKMapView? CreateMap()
+        public void CreateMap()
         {
             if (this.disposed)
             {
-                return null;
+                return;
             }
 
             if (this.mapView is null)
@@ -40,11 +40,9 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                 this.mapView.AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight;
                 this.AddSubview(this.mapView);
             }
-
-            return this.mapView;
         }
 
-        public MauiMKMapView Map => this.mapView!;
+        public MauiMKMapView? Map => this.mapView;
 
         public override void MovedToWindow()
         {
@@ -73,8 +71,6 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                 case MKCircle circle:
                     overlayRenderer = this.GetMapElement<MKCircleRenderer>(circle);
                     break;
-                default:
-                    break;
             }
 
             if (overlayRenderer == null)
@@ -88,7 +84,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         internal void RemoveAllAnnotations()
         {
-            if (this.Map.Annotations?.Length > 0)
+            if (this.Map?.Annotations.Length > 0)
             {
                 this.Map.RemoveAnnotations(this.Map.Annotations);
             }
@@ -98,8 +94,9 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
         {
             var stopwatch = Stopwatch.StartNew();
 
-            this.handlerRef.TryGetTarget(out var handler);
-            if (handler?.MauiContext is not IMauiContext mauiContext)
+            if (!this.handlerRef.TryGetTarget(out var handler) ||
+                handler.MauiContext is not IMauiContext mauiContext ||
+                this.Map is not MauiMKMapView mkMapView)
             {
                 return;
             }
@@ -137,7 +134,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                     }
 
                     pin.MarkerId = annotation;
-                    this.Map.AddAnnotation(annotation);
+                    mkMapView.AddAnnotation(annotation);
                 }
             }
 
@@ -146,7 +143,12 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         internal void ClearMapElements()
         {
-            var overlays = this.Map.Overlays;
+            if (this.Map is not MauiMKMapView mkMapView)
+            {
+                return;
+            }
+
+            var overlays = mkMapView.Overlays;
 
             if (overlays == null)
             {
@@ -155,12 +157,17 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
             foreach (var overlay in overlays)
             {
-                this.Map.RemoveOverlay(overlay);
+                mkMapView.RemoveOverlay(overlay);
             }
         }
 
         internal void AddElements(IEnumerable elements)
         {
+            if (this.Map is not MauiMKMapView mapView)
+            {
+                return;
+            }
+
             foreach (IMapElement element in elements)
             {
                 IMKOverlay? overlay = null;
@@ -191,25 +198,35 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                 if (overlay != null)
                 {
                     element.MapElementId = overlay;
-                    this.Map.AddOverlay(overlay);
+                    mapView.AddOverlay(overlay);
                 }
             }
         }
 
         internal void RemoveElements(IList elements)
         {
+            if (this.Map is not MauiMKMapView mapView)
+            {
+                return;
+            }
+
             foreach (IMapElement element in elements)
             {
                 if (element.MapElementId is IMKOverlay overlay)
                 {
-                    this.Map.RemoveOverlay(overlay);
+                    mapView.RemoveOverlay(overlay);
                 }
             }
         }
 
         private void Startup()
         {
-            var mapDelegate = this.Map.Delegate;
+            if (this.Map is not MauiMKMapView mapView)
+            {
+                return;
+            }
+
+            var mapDelegate = mapView.Delegate;
             mapDelegate.RendererForOverlayDelegate += this.GetViewForOverlayDelegate;
             mapDelegate.RegionDidChangeAnimatedDelegate += this.OnRegionDidChangeAnimated;
             mapDelegate.DidFinishRenderingMapDelegate += this.OnDidFinishRenderingMap;
@@ -230,19 +247,30 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                 this.mapClickedGestureRecognizer = null;
             }
 
-            var mapDelegate = this.Map.Delegate;
-            mapDelegate.RendererForOverlayDelegate -= this.GetViewForOverlayDelegate;
-            mapDelegate.RegionDidChangeAnimatedDelegate -= this.OnRegionDidChangeAnimated;
-            mapDelegate.DidFinishRenderingMapDelegate -= this.OnDidFinishRenderingMap;
-            mapDelegate.DidSelectAnnotationViewDelegate -= this.OnAnnotationViewSelected;
+            if (this.Map is MauiMKMapView mkMapView)
+            {
+                var mapDelegate = mkMapView.Delegate;
+                mapDelegate.RendererForOverlayDelegate -= this.GetViewForOverlayDelegate;
+                mapDelegate.RegionDidChangeAnimatedDelegate -= this.OnRegionDidChangeAnimated;
+                mapDelegate.DidFinishRenderingMapDelegate -= this.OnDidFinishRenderingMap;
+                mapDelegate.DidSelectAnnotationViewDelegate -= this.OnAnnotationViewSelected;
+            }
         }
 
         private void OnAnnotationViewSelected(MKMapView mapView, MKAnnotationView annotationView)
         {
-            this.handlerRef.TryGetTarget(out var handler);
-            var map = handler?.VirtualView!;
+            if (!this.handlerRef.TryGetTarget(out var handler) ||
+                handler.VirtualView is not Map map)
+            {
+                return;
+            }
 
-            var annotation = annotationView.Annotation!;
+            var annotation = annotationView.Annotation;
+            if (annotation == null)
+            {
+                return;
+            }
+
             var pin = map.GetPinForAnnotation(annotation);
             if (pin == null)
             {
@@ -255,7 +283,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
             if (sendMarkerClickHandled)
             {
-                this.Map.DeselectAnnotation(annotation, false);
+                mapView.DeselectAnnotation(annotation, false);
             }
         }
 
@@ -318,17 +346,18 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         private static void OnMapClicked(UITapGestureRecognizer recognizer)
         {
-            if (recognizer.View is not MapView mapView)
+            if (recognizer.View is not MapView mapView ||
+                mapView.Map is not MauiMKMapView mkMapView)
             {
                 return;
             }
 
             var tapPoint = recognizer.LocationInView(mapView);
-            var tapGPS = mapView.Map.ConvertPoint(tapPoint, mapView);
+            var tapGPS = mkMapView.ConvertPoint(tapPoint, mapView);
 
-            if (mapView.handlerRef.TryGetTarget(out var handler))
+            if (mapView.handlerRef.TryGetTarget(out var handler) &&
+                handler.VirtualView is IMap map)
             {
-                IMap map = handler.VirtualView;
                 map.Clicked(new Location(tapGPS.Latitude, tapGPS.Longitude));
             }
         }
@@ -363,6 +392,8 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
     public class MauiMKMapView : MKMapView
     {
+        private bool isReadonly;
+
         public MauiMKMapView()
         {
             this.Delegate = new MapViewDelegateImpl();
@@ -372,6 +403,25 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
         {
             get => (MapViewDelegateImpl)base.Delegate;
             init => base.Delegate = value;
+        }
+
+        public bool IsReadonly
+        {
+            get => this.isReadonly;
+            set
+            {
+                this.isReadonly = value;
+                var annotationViewEnabled = !value;
+
+                foreach (var annotation in this.Annotations)
+                {
+                    var annotationView = this.ViewForAnnotation(annotation);
+                    if (annotationView != null)
+                    {
+                        annotationView.Enabled = annotationViewEnabled;
+                    }
+                }
+            }
         }
     }
 }

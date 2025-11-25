@@ -2,8 +2,8 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Maps.Handlers;
 using IMap = Microsoft.Maui.Maps.IMap;
 using Map = Superdev.Maui.Maps.Controls.Map;
-using System.Collections;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 using CoreLocation;
 using Foundation;
@@ -16,7 +16,6 @@ using Superdev.Maui.Maps.Extensions;
 using UIKit;
 using Superdev.Maui.Maps.Platforms.Extensions;
 using Superdev.Maui.Maps.Platforms.Utils;
-using Superdev.Maui.Maps.Utils;
 using Pin = Superdev.Maui.Maps.Controls.Pin;
 
 namespace Superdev.Maui.Maps.Platforms.Handlers
@@ -45,8 +44,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         public static CommandMapper<Map, MapHandler> CommandMapper = new(ViewHandler.ViewCommandMapper)
         {
-            [nameof(IMap.MoveToRegion)] = MapMoveToRegion,
-            [nameof(IMapHandler.UpdateMapElement)] = MapUpdateMapElement,
+            [nameof(IMap.MoveToRegion)] = MapMoveToRegion, [nameof(IMapHandler.UpdateMapElement)] = MapUpdateMapElement,
         };
 
         internal static readonly ImageCache ImageCache = new ImageCache();
@@ -72,25 +70,37 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             return mapView;
         }
 
-		protected override void ConnectHandler(MapView platformView)
-		{
+        public new Map? VirtualView => ((ElementHandler)this).VirtualView as Map;
+
+        public new MapView? PlatformView => ((ElementHandler)this).PlatformView as MapView;
+
+        protected override void ConnectHandler(MapView platformView)
+        {
             base.ConnectHandler(platformView);
 
             platformView.CreateMap();
-            platformView.Map.Delegate.GetViewForAnnotationDelegate += this.GetViewForAnnotations;
+
+            if (platformView.Map is MauiMKMapView mkMapView)
+            {
+                mkMapView.Delegate.GetViewForAnnotationDelegate += this.GetViewForAnnotations;
+            }
         }
 
         protected override void DisconnectHandler(MapView platformView)
-		{
+        {
             base.DisconnectHandler(platformView);
 
-            platformView.Map.Delegate.GetViewForAnnotationDelegate -= this.GetViewForAnnotations;
+            if (platformView.Map is MauiMKMapView mkMapView)
+            {
+                mkMapView.Delegate.GetViewForAnnotationDelegate -= this.GetViewForAnnotations;
+            }
+
             platformView.DisposeMap();
 
             ImageCache.Clear();
-		}
+        }
 
-        private MKAnnotationView? GetViewForAnnotations(MKMapView? mapView, NSObject? annotationObj)
+        private MKAnnotationView? GetViewForAnnotations(MauiMKMapView mapView, NSObject annotationObj)
         {
             if (annotationObj == null)
             {
@@ -122,35 +132,28 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
             if (annotationView == null)
             {
-                var isAtLeastIos11 = OperatingSystem.IsIOSVersionAtLeast(11);
-                annotationView = isAtLeastIos11
-                    ? new MKMarkerAnnotationView(annotation, DefaultPinId)
-                    : new MKPinAnnotationView(annotation, DefaultPinId);
-
+                annotationView = new MKMarkerAnnotationView(annotation, DefaultPinId);
                 annotationView.CanShowCallout = true;
 
-                if (isAtLeastIos11)
-                {
-                    // Need to set this to get the callout bubble to show up
-                    // Without this no callout is shown, it's displayed differently
-                    annotationView.RightCalloutAccessoryView = new UIView();
-                }
+                // Need to set this to get the callout bubble to show up
+                // Without this no callout is shown, it's displayed differently
+                annotationView.RightCalloutAccessoryView = new UIView();
             }
 
-            var map = this.VirtualView;
-            var annotationViewEnabled = map.IsReadonly;
-            annotationView.Enabled = !annotationViewEnabled;
+            var annotationViewEnabled = !mapView.IsReadonly;
+            annotationView.Enabled = annotationViewEnabled;
+
             annotationView.Annotation = annotation;
             this.AttachGestureToPin(annotationView, annotation);
 
             return annotationView;
         }
 
-        protected virtual MKAnnotationView? GetViewForAnnotations(MKMapView? mapView, IMKAnnotation? annotation)
+        protected virtual MKAnnotationView? GetViewForAnnotations(MauiMKMapView mapView, IMKAnnotation annotation)
         {
             MKAnnotationView? annotationView = null;
 
-            if (mapView != null && annotation is CustomPinAnnotation customAnnotation)
+            if (annotation is CustomPinAnnotation customAnnotation)
             {
                 annotationView = mapView.DequeueReusableAnnotation(ImagePinId) ?? new MKAnnotationView(annotation, ImagePinId);
                 annotationView.Image = customAnnotation.Image;
@@ -167,28 +170,32 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
             if (recognizers != null)
             {
-                foreach (var r in recognizers)
+                foreach (var recognizer in recognizers)
                 {
-                    annotationView.RemoveGestureRecognizer(r);
+                    annotationView.RemoveGestureRecognizer(recognizer);
                 }
             }
 
-            var recognizer = new UITapGestureRecognizer(_ => this.OnCalloutClicked(annotation))
             {
-                ShouldReceiveTouch = (_, touch) =>
+                var recognizer = new UITapGestureRecognizer(_ => this.OnCalloutClicked(annotation))
                 {
-                    this.lastTouchedView = touch.View;
-                    return true;
-                }
-            };
+                    ShouldReceiveTouch = (_, touch) =>
+                    {
+                        this.lastTouchedView = touch.View;
+                        return true;
+                    }
+                };
 
-            annotationView.AddGestureRecognizer(recognizer);
+                annotationView.AddGestureRecognizer(recognizer);
+            }
         }
 
-        // TODO: protected virtual?
-        protected virtual void OnCalloutClicked(IMKAnnotation annotation)
+        private void OnCalloutClicked(IMKAnnotation annotation)
         {
-            var map = this.VirtualView;
+            if (this.VirtualView is not Map map)
+            {
+                return;
+            }
 
             if (map.IsReadonly)
             {
@@ -238,16 +245,23 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             var deselect = selectedPin.SendInfoWindowClick();
             if (deselect)
             {
-                var mapView = this.PlatformView;
-                mapView.Map.DeselectAnnotation(annotation, true);
+                if (this.PlatformView is { Map: MauiMKMapView mkMapView })
+                {
+                    mkMapView.DeselectAnnotation(annotation, true);
+                }
             }
         }
 
-		public static void MapMapType(MapHandler handler, IMap map)
+        public static void MapMapType(MapHandler handler, IMap map)
         {
+            if (handler.PlatformView is not MapView mapView ||
+                mapView.Map is not MauiMKMapView mkMapView)
+            {
+                return;
+            }
+
             var mapType = ConvertToMKMapType(map.MapType);
-            var mapView = handler.PlatformView;
-            mapView.Map.MapType = mapType;
+            mkMapView.MapType = mapType;
         }
 
         private static MKMapType ConvertToMKMapType(MapType mapType)
@@ -274,63 +288,101 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
         }
 
         public static void MapIsShowingUser(MapHandler handler, IMap map)
-		{
-			if (map.IsShowingUser)
-			{
-				LocationManager?.RequestWhenInUseAuthorization();
-			}
-
-            var mapView = handler.PlatformView;
-            mapView.Map.ShowsUserLocation = map.IsShowingUser;
-		}
-
-		public static void MapIsScrollEnabled(MapHandler handler, IMap map)
-		{
-            var mapView = handler.PlatformView;
-            mapView.Map.ScrollEnabled = map.IsScrollEnabled;
-		}
-
-		public static void MapIsRotateEnabled(MapHandler handler, Map map)
-		{
-            var mapView = handler.PlatformView;
-            mapView.Map.RotateEnabled = map.IsRotateEnabled;
-		}
-
-		public static void MapIsTiltEnabled(MapHandler handler, Map map)
-		{
-            var mapView = handler.PlatformView;
-            mapView.Map.PitchEnabled = map.IsTiltEnabled;
-		}
-
-		public static void MapIsTrafficEnabled(MapHandler handler, IMap map)
-		{
-            var mapView = handler.PlatformView;
-            mapView.Map.ShowsTraffic = map.IsTrafficEnabled;
-		}
-
-		public static void MapIsZoomEnabled(MapHandler handler, IMap map)
-		{
-            var mapView = handler.PlatformView;
-            mapView.Map.ZoomEnabled = map.IsZoomEnabled;
-		}
-
-		public static void MapPins(MapHandler handler, Map map)
         {
-            var mapView = handler.PlatformView;
+            if (handler.PlatformView is not MapView mapView ||
+                mapView.Map is not MauiMKMapView mkMapView)
+            {
+                return;
+            }
+
+            if (map.IsShowingUser)
+            {
+                LocationManager?.RequestWhenInUseAuthorization();
+            }
+
+            mkMapView.ShowsUserLocation = map.IsShowingUser;
+        }
+
+        public static void MapIsScrollEnabled(MapHandler handler, IMap map)
+        {
+            if (handler.PlatformView is not MapView mapView ||
+                mapView.Map is not MauiMKMapView mkMapView)
+            {
+                return;
+            }
+
+            mkMapView.ScrollEnabled = map.IsScrollEnabled;
+        }
+
+        public static void MapIsRotateEnabled(MapHandler handler, Map map)
+        {
+            if (handler.PlatformView is not MapView mapView ||
+                mapView.Map is not MauiMKMapView mkMapView)
+            {
+                return;
+            }
+
+            mkMapView.RotateEnabled = map.IsRotateEnabled;
+        }
+
+        public static void MapIsTiltEnabled(MapHandler handler, Map map)
+        {
+            if (handler.PlatformView is not MapView mapView ||
+                mapView.Map is not MauiMKMapView mkMapView)
+            {
+                return;
+            }
+
+            mkMapView.PitchEnabled = map.IsTiltEnabled;
+        }
+
+        public static void MapIsTrafficEnabled(MapHandler handler, IMap map)
+        {
+            if (handler.PlatformView is not MapView mapView ||
+                mapView.Map is not MauiMKMapView mkMapView)
+            {
+                return;
+            }
+
+            mkMapView.ShowsTraffic = map.IsTrafficEnabled;
+        }
+
+        public static void MapIsZoomEnabled(MapHandler handler, IMap map)
+        {
+            if (handler.PlatformView is not MapView mapView ||
+                mapView.Map is not MauiMKMapView mkMapView)
+            {
+                return;
+            }
+
+            mkMapView.ZoomEnabled = map.IsZoomEnabled;
+        }
+
+        public static void MapPins(MapHandler handler, Map map)
+        {
+            if (handler.PlatformView is not MapView mapView)
+            {
+                return;
+            }
+
             mapView.RemoveAllAnnotations();
             mapView.AddPins(map.Pins);
         }
 
-		public static void MapElements(MapHandler handler, IMap map)
-		{
-            var mapView = handler.PlatformView;
+        public static void MapElements(MapHandler handler, IMap map)
+        {
+            if (handler.PlatformView is not MapView mapView)
+            {
+                return;
+            }
+
             mapView.ClearMapElements();
 
             if (map.Elements is IEnumerable<IMapElement> mapElements)
             {
                 mapView.AddElements(mapElements);
             }
-		}
+        }
 
         private static void MapSelectedItem(MapHandler mapHandler, Map map)
         {
@@ -363,28 +415,30 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         private static void MapIsReadonly(MapHandler handler, Map map)
         {
-            var annotationViewEnabled = !map.IsReadonly;
-            var mapView = handler.PlatformView;
-            foreach (var annotation in handler.PlatformView.Map.Annotations)
+            if (handler.PlatformView is not MapView mapView ||
+                mapView.Map is not MauiMKMapView mkMapView)
             {
-                var annotationView = mapView.Map.ViewForAnnotation(annotation);
-                if (annotationView != null)
-                {
-                    annotationView.Enabled = annotationViewEnabled;
-                }
+                return;
             }
+
+            mkMapView.IsReadonly = map.IsReadonly;
         }
 
-        public static void MapMoveToRegion(MapHandler handler, IMap map, object arg)
+        public static void MapMoveToRegion(MapHandler handler, IMap map, object? arg)
         {
             if (arg is MapMoveRequest moveRequest)
             {
-                handler?.MoveToRegion(moveRequest.MapSpan, moveRequest.Animated);
+                handler.MoveToRegion(moveRequest.MapSpan, moveRequest.Animated);
             }
         }
 
         private void MoveToRegion(MapSpan mapSpan, bool animated)
         {
+            if (this.PlatformView is not MapView mapView)
+            {
+                return;
+            }
+
             var centerLocation = mapSpan.Center;
             if (centerLocation.IsUnknown())
             {
@@ -395,18 +449,21 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                 center: new CLLocationCoordinate2D(centerLocation.Latitude, centerLocation.Longitude),
                 span: new MKCoordinateSpan(mapSpan.LatitudeDegrees, mapSpan.LongitudeDegrees));
 
-            var mapView = this.PlatformView;
-            mapView.Map.SetRegion(region, animated);
+            mapView.Map?.SetRegion(region, animated);
         }
 
         public void UpdateMapElement(IMapElement element)
         {
-            var mapView = this.PlatformView;
+            if (this.PlatformView is not MapView mapView)
+            {
+                return;
+            }
+
             mapView.RemoveElements(new[] { element });
             mapView.AddElements(new[] { element });
         }
 
-        public static void MapUpdateMapElement(MapHandler handler, IMap map, object arg)
+        public static void MapUpdateMapElement(MapHandler handler, IMap map, object? arg)
         {
             if (arg is not MapElementHandlerUpdate args)
             {

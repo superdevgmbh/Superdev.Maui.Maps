@@ -6,7 +6,7 @@ namespace Superdev.Maui.Maps.Platforms.Utils
 {
     internal class ImageCache : ImageCache<UIImage>
     {
-        protected override UIImage LoadImage(ImageSource imageSource, IMauiContext mauiContext)
+        protected override UIImage? LoadImage(ImageSource imageSource, IMauiContext mauiContext)
         {
             return ImageSourceExtensions.LoadImage(imageSource, mauiContext);
         }

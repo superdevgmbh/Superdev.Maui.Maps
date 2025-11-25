@@ -14,6 +14,31 @@ namespace Superdev.Maui.Maps.Tests.Extensions
     public class LocationExtensionsTests
     {
         [Theory]
+        [ClassData(typeof(IsUnknownTestData))]
+        public void ShouldCheckIsUnknown(Location? location, bool expectedResult)
+        {
+            // Act
+            var result = location.IsUnknown();
+
+            // Assert
+            result.Should().Be(expectedResult);
+        }
+
+        public class IsUnknownTestData : TheoryData<Location?, bool>
+        {
+            public IsUnknownTestData()
+            {
+                this.Add(null, true);
+                this.Add(new Location(double.NaN, double.NaN), true);
+                this.Add(new Location(double.NaN, 0d), true);
+                this.Add(new Location(0d, double.NaN), true);
+
+                this.Add(new Location(0d, 0d), false);
+                this.Add(new Location(64.751114d, -147.349442d), false);
+            }
+        }
+
+        [Theory]
         [ClassData(typeof(CalculateDistanceTestData))]
         public void ShouldCalculateDistance(IEnumerable<Location> locations, DistanceCalculationMode calculationMode, Distance? expectedDistance)
         {

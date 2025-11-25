@@ -46,17 +46,17 @@ namespace MapsDemoApp.ViewModels
         private bool isZoomEnabled = true;
         private bool isReadonly;
         private Distance zoomLevel;
-        private MapSpan visibleRegion;
+        private MapSpan? visibleRegion;
 
         private IAsyncRelayCommand? getCurrentPositionCommand;
         private IRelayCommand? addPinCommand;
         private IRelayCommand? removePinCommand;
         private IRelayCommand? clearAllPinsCommand;
         private IRelayCommand<ToggledEventArgs>? isShowingUserToggledCommand;
-        private Location currentPosition;
+        private Location? currentPosition;
         private IAsyncRelayCommand? appearingCommand;
-        private ObservableCollection<ParkingLotViewModel> parkingLots;
-        private ParkingLotViewModel selectedParkingLot;
+        private ObservableCollection<ParkingLotViewModel> parkingLots = new ObservableCollection<ParkingLotViewModel>();
+        private ParkingLotViewModel? selectedParkingLot;
         private ObservableCollection<MapElement> mapElements = new ObservableCollection<MapElement>();
         private IRelayCommand? addPolygonsCommand;
         private IRelayCommand? addCirclesCommand;
@@ -64,9 +64,9 @@ namespace MapsDemoApp.ViewModels
         private IRelayCommand? addPolylinesCommand;
         private IAsyncRelayCommand? loadPinsCommand;
         private MapType mapType;
-        private MapType[] mapTypes;
-        private LocationViewModel[] locations;
-        private LocationViewModel selectedLocation;
+        private MapType[] mapTypes = Array.Empty<MapType>();
+        private LocationViewModel[] locations = Array.Empty<LocationViewModel>();
+        private LocationViewModel? selectedLocation;
         private IRelayCommand<MapClickedEventArgs>? mapClickedCommand;
 
         public MapDemoViewModel(
@@ -116,10 +116,10 @@ namespace MapsDemoApp.ViewModels
                 await this.LoadPinsAsync();
 
                 var parkingLocations = this.ParkingLots.Select(p => p.Location).ToArray();
-                var centerLocation = parkingLocations.GetCenterLocation();
+                var centerLocation = parkingLocations!.GetCenterLocation();
                 this.CurrentPosition = centerLocation != null ? centerLocation : Map.DefaultCenter;
 
-                var zoomLevel = parkingLocations.CalculateDistance() is Distance d
+                var zoomLevel = parkingLocations!.CalculateDistance() is Distance d
                     ? Distance.FromKilometers(d.Kilometers / 2d)
                     : Distance.FromKilometers(300d);
 
@@ -141,7 +141,7 @@ namespace MapsDemoApp.ViewModels
             private set => this.SetProperty(ref this.parkingLots, value);
         }
 
-        public ParkingLotViewModel SelectedParkingLot
+        public ParkingLotViewModel? SelectedParkingLot
         {
             get => this.selectedParkingLot;
             set => this.SetProperty(ref this.selectedParkingLot, value);
@@ -191,7 +191,7 @@ namespace MapsDemoApp.ViewModels
 
         public IRelayCommand<ToggledEventArgs> IsShowingUserToggledCommand
         {
-            get => this.isShowingUserToggledCommand ??= new RelayCommand<ToggledEventArgs>(this.IsShowingUserToggled);
+            get => this.isShowingUserToggledCommand ??= new RelayCommand<ToggledEventArgs>(this.IsShowingUserToggled!);
         }
 
         private void IsShowingUserToggled(ToggledEventArgs eventArgs)
@@ -213,7 +213,7 @@ namespace MapsDemoApp.ViewModels
             }
         }
 
-        public MapSpan VisibleRegion
+        public MapSpan? VisibleRegion
         {
             get => this.visibleRegion;
             set => this.SetProperty(ref this.visibleRegion, value);
@@ -243,19 +243,22 @@ namespace MapsDemoApp.ViewModels
             private set => this.SetProperty(ref this.locations, value);
         }
 
-        public LocationViewModel SelectedLocation
+        public LocationViewModel? SelectedLocation
         {
             get => this.selectedLocation;
             set
             {
                 if (this.SetProperty(ref this.selectedLocation, value))
                 {
-                    this.VisibleRegion = MapSpan.FromCenterAndRadius(value.Location, Distance.FromKilometers(300));
+                    if (value != null)
+                    {
+                        this.VisibleRegion = MapSpan.FromCenterAndRadius(value.Location, Distance.FromKilometers(300));
+                    }
                 }
             }
         }
 
-        public Location CurrentPosition
+        public Location? CurrentPosition
         {
             get => this.currentPosition;
             private set => this.SetProperty(ref this.currentPosition, value);
@@ -401,7 +404,7 @@ namespace MapsDemoApp.ViewModels
 
         private void MapClicked(MapClickedEventArgs e)
         {
-            _ = this.dialogService.DisplayAlertAsync("MapClickedCommand", $"{e.Location.Latitude}, {e.Location.Longitude}", "OK");
+            this.logger.LogDebug($"MapClicked: Latitude={e.Location.Latitude}, Longitude={e.Location.Longitude}");
         }
     }
 }

@@ -5,7 +5,7 @@ namespace Superdev.Maui.Maps.Platforms.Extensions
 {
     internal static class ImageSourceExtensions
     {
-        internal static UIImage LoadImage(this ImageSource imageSource, IMauiContext mauiContext)
+        internal static UIImage? LoadImage(this ImageSource imageSource, IMauiContext mauiContext)
         {
             UIImage? image = null;
 
@@ -14,7 +14,7 @@ namespace Superdev.Maui.Maps.Platforms.Extensions
                 image = result?.Value;
             });
 
-            return image!;
+            return image;
         }
     }
 }

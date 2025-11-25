@@ -1,4 +1,5 @@
 using MapKit;
+using Microsoft.Maui.Platform;
 using Superdev.Maui.Maps.Controls;
 
 namespace Superdev.Maui.Maps.Platforms.Handlers
@@ -32,12 +33,11 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         private void UpdateAnnotation(MapPinHandler _, Pin pin)
         {
-            if (pin.Map.TryGetTarget(out var map) && map.Handler is MapHandler mapHandler)
+            if (pin.TryGetMap(out var map) && map.Handler is MapHandler { PlatformView:  { Map: MauiMKMapView mkMapView } })
             {
                 if (pin.MarkerId is IMKAnnotation annotation)
                 {
-                    var mapView = mapHandler.PlatformView;
-                    var annotationView = mapView.Map.ViewForAnnotation(annotation);
+                    var annotationView = mkMapView.ViewForAnnotation(annotation);
                     if (annotationView != null)
                     {
                         if (pin.ImageSource is ImageSource imageSource && this.MauiContext is MauiContext mauiContext)
@@ -56,9 +56,9 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         private static void MapIsSelected(MapPinHandler mapPinHandler, Pin pin)
         {
-            if (pin.Map.TryGetTarget(out var map))
+            if (pin.TryGetMap(out var map) && map.Handler is MapHandler mapHandler)
             {
-                map.Handler?.UpdateValue(nameof(Pin.IsSelected));
+                mapHandler.UpdateValue(nameof(Pin.IsSelected));
             }
         }
     }

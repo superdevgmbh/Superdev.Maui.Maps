@@ -5,18 +5,28 @@ namespace Superdev.Maui.Maps.Extensions
 {
     public static class LocationExtensions
     {
+        /// <summary>
+        /// Checks if <paramref name="location"/> is null or contains invalid Latitude or Longitude values.
+        /// </summary>
+        /// <param name="location">The location.</param>
         public static bool IsUnknown([NotNullWhen(false)] this Location? location)
         {
-            return location == null || double.IsNaN(location.Longitude) || double.IsNaN(location.Latitude);
+            return location == null || double.IsNaN(location.Latitude) || double.IsNaN(location.Longitude);
         }
 
-        public static Location? GetCenterLocation(this IEnumerable<Location>? locations)
+        /// <summary>
+        /// Returns the geometrical center location of a given list of locations.
+        /// </summary>
+        /// <param name="locations">The list of locations.</param>
+        /// <remarks>
+        /// <ul>
+        ///    <li>The method may return null if the list of locations is null or empty.</li>
+        ///    <li>If the list only contains one location, this location is returned as the center location.</li>
+        ///    <li>If the list contains multiple valid locations, the average of all Latitude and Longitude values is calculated.</li>
+        /// </ul>
+        /// </remarks>
+        public static Location? GetCenterLocation(this IEnumerable<Location> locations)
         {
-            if (locations == null)
-            {
-                return null;
-            }
-
             var locationsArray = locations
                 .Where(l => !l.IsUnknown())
                 .ToArray();
@@ -24,6 +34,11 @@ namespace Superdev.Maui.Maps.Extensions
             if (locationsArray.Length == 0)
             {
                 return null;
+            }
+
+            if (locationsArray.Length == 1)
+            {
+                return locationsArray[0];
             }
 
             return locationsArray.GetCenterLocationInternal();
@@ -38,20 +53,12 @@ namespace Superdev.Maui.Maps.Extensions
 
         public static Location WithLatitudeOffset(this Location position, double latitudeOffset)
         {
-            return new Location
-            {
-                Latitude = position.Latitude + latitudeOffset,
-                Longitude = position.Longitude
-            };
+            return new Location { Latitude = position.Latitude + latitudeOffset, Longitude = position.Longitude };
         }
 
         public static Location WithLongitudeOffset(this Location position, double longitudeOffset)
         {
-            return new Location
-            {
-                Latitude = position.Latitude,
-                Longitude = position.Longitude + longitudeOffset
-            };
+            return new Location { Latitude = position.Latitude, Longitude = position.Longitude + longitudeOffset };
         }
 
         /// <summary>
@@ -60,13 +67,8 @@ namespace Superdev.Maui.Maps.Extensions
         /// <param name="locations">The locations.</param>
         /// <param name="calculationMode">Calculation method.</param>
         /// <returns>The maximum distance between locations.</returns>
-        public static Distance? CalculateDistance(this IEnumerable<Location>? locations, DistanceCalculationMode calculationMode = DistanceCalculationMode.BoundingBox)
+        public static Distance? CalculateDistance(this IEnumerable<Location> locations, DistanceCalculationMode calculationMode = DistanceCalculationMode.BoundingBox)
         {
-            if (locations == null)
-            {
-                return null;
-            }
-
             var locationsArray = locations
                 .Where(l => !l.IsUnknown())
                 .ToArray();

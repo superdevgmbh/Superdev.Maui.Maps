@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui.Controls.Maps;
 using Superdev.Maui.Mvvm;
@@ -10,13 +11,13 @@ namespace MapsDemoApp.ViewModels
     {
         private static readonly Point DefaultAnchor = new Point(0.5d, 1d);
 
-        private Location location;
-        private string name;
+        private Location? location;
+        private string name = null!;
         private IRelayCommand<PinClickedEventArgs>? markerClickedCommand;
 
         public ParkingLotViewModel(
             string name,
-            Location location)
+            Location? location)
         {
             this.Name = name;
             this.Location = location;
@@ -28,7 +29,7 @@ namespace MapsDemoApp.ViewModels
             set => this.SetProperty(ref this.name, value);
         }
 
-        public Location Location
+        public Location? Location
         {
             get => this.location;
             set => this.SetProperty(ref this.location, value);

@@ -27,7 +27,7 @@ namespace MapsDemoApp.ViewModels
 
         public IAsyncRelayCommand<string> NavigateToPageCommand
         {
-            get => this.navigateToPageCommand ??= new AsyncRelayCommand<string>(this.NavigateToPageAsync);
+            get => this.navigateToPageCommand ??= new AsyncRelayCommand<string>(this.NavigateToPageAsync!);
         }
 
         private async Task NavigateToPageAsync(string page)
@@ -40,7 +40,7 @@ namespace MapsDemoApp.ViewModels
 
         public IAsyncRelayCommand<string> OpenUrlCommand
         {
-            get => this.openUrlCommand ??= new AsyncRelayCommand<string>(this.OpenUrlAsync);
+            get => this.openUrlCommand ??= new AsyncRelayCommand<string>(this.OpenUrlAsync!);
         }
 
         private async Task OpenUrlAsync(string url)
