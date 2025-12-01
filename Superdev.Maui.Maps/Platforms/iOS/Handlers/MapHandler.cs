@@ -53,8 +53,6 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         private object? lastTouchedView;
 
-        internal List<IMKAnnotation> Markers { get; } = new List<IMKAnnotation>(); // TODO: REMOVE
-
         public MapHandler() : base(Mapper, CommandMapper)
         {
         }
@@ -297,7 +295,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
             if (map.IsShowingUser)
             {
-                LocationManager?.RequestWhenInUseAuthorization();
+                LocationManager.RequestWhenInUseAuthorization();
             }
 
             mkMapView.ShowsUserLocation = map.IsShowingUser;

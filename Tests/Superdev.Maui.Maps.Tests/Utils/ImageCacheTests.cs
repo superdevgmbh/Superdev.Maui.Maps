@@ -3,7 +3,7 @@ using Moq;
 using Superdev.Maui.Maps.Utils;
 using Xunit;
 
-namespace Superdev.Maui.Maps.Tests
+namespace Superdev.Maui.Maps.Tests.Utils
 {
     public class ImageCacheTests
     {
@@ -16,7 +16,7 @@ namespace Superdev.Maui.Maps.Tests
             var mauiContextMock = new Mock<IMauiContext>();
 
             // Act
-            var testImage = imageCache.GetImage(imageSource, mauiContextMock.Object);
+            var testImage = imageCache.GetImage(imageSource, mauiContextMock.Object)!;
 
             // Assert
             imageCache.LoadImageCounter.Should().Be(1);
@@ -33,10 +33,10 @@ namespace Superdev.Maui.Maps.Tests
             var imageSource = new StreamImageSource();
             var mauiContextMock = new Mock<IMauiContext>();
 
-            var testImage1 = imageCache.GetImage(imageSource, mauiContextMock.Object);
+            var testImage1 = imageCache.GetImage(imageSource, mauiContextMock.Object)!;
 
             // Act
-            var testImage2 = imageCache.GetImage(imageSource, mauiContextMock.Object);
+            var testImage2 = imageCache.GetImage(imageSource, mauiContextMock.Object)!;
 
             // Assert
             imageCache.LoadImageCounter.Should().Be(1);
