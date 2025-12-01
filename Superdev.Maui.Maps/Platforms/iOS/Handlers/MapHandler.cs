@@ -216,8 +216,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
             selectedPin.IsSelected = true;
 
-            var selectedItem = map.Pins.FirstOrDefault(p => Equals(p, selectedPin))?.BindingContext;
-            map.SelectedItem = selectedItem ?? selectedPin;
+            map.SelectedItem = selectedPin.BindingContext ?? selectedPin;
 
             if (selectedPin is { MarkerClickedCommand: ICommand markerClickedCommand })
             {

@@ -544,8 +544,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
             selectedPin.IsSelected = true;
 
-            var selectedItem = map.Pins.FirstOrDefault(p => Equals(p, selectedPin))?.BindingContext;
-            map.SelectedItem = selectedItem ?? selectedPin;
+            map.SelectedItem = selectedPin.BindingContext ?? selectedPin;
 
             // Setting e.Handled = true will prevent the info window from being presented
             // SendMarkerClick returns the value of PinClickedEventArgs.HideInfoWindow
