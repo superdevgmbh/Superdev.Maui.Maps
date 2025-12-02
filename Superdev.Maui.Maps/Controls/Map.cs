@@ -473,7 +473,7 @@ namespace Superdev.Maui.Maps.Controls
 
         void IMap.Clicked(Location location)
         {
-            if (this.DeselectSelectedItemOnMapClick)
+            if (this.DeselectSelectedItemOnMapClick && !this.IsReadonly)
             {
                 this.SelectedItem = null;
             }
