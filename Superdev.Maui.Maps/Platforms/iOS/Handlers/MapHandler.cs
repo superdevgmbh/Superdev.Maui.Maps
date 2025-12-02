@@ -400,7 +400,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                 if (selectedPin == null)
                 {
                     var pins = map.Pins;
-                    selectedPin = pins.SingleOrDefault(p => Equals(p.BindingContext, map.SelectedItem));
+                    selectedPin = pins.SingleOrDefault(p => Equals(p.BindingContext, selectedItem));
                 }
 
                 if (selectedPin != null)
