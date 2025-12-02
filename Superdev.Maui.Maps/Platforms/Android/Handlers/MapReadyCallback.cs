@@ -2,7 +2,7 @@ using Android.Gms.Maps;
 
 namespace Superdev.Maui.Maps.Platforms.Handlers
 {
-    public delegate void OnMapReadyDelegate(GoogleMap googleMap);
+    public delegate void OnMapReadyDelegate(GoogleMap? googleMap);
 
     internal class MapReadyCallback : Java.Lang.Object, IOnMapReadyCallback
     {
@@ -13,7 +13,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         public OnMapReadyDelegate Delegate { get; }
 
-        public void OnMapReady(GoogleMap googleMap)
+        public void OnMapReady(GoogleMap? googleMap)
         {
             this.Delegate.Invoke(googleMap);
         }

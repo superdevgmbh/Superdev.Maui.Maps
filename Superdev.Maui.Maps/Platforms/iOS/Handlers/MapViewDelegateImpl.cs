@@ -11,6 +11,8 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
     public delegate void DidFinishRenderingMapDelegate(MKMapView mapView, bool fullyRendered);
 
+    public delegate void DidFinishLoadingMapDelegate(MKMapView mapView);
+
     public delegate MKOverlayRenderer RendererForOverlayDelegate(MKMapView mapView, IMKOverlay overlay);
 
     public class MapViewDelegateImpl : MKMapViewDelegate
@@ -33,10 +35,18 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         public DidFinishRenderingMapDelegate? DidFinishRenderingMapDelegate { get; set; }
 
-        [Export ("mapViewDidFinishRenderingMap:fullyRendered:")]
+        [Export("mapViewDidFinishRenderingMap:fullyRendered:")]
         public new void DidFinishRenderingMap(MKMapView mapView, bool fullyRendered)
         {
             this.DidFinishRenderingMapDelegate?.Invoke(mapView, fullyRendered);
+        }
+
+        public DidFinishLoadingMapDelegate? DidFinishLoadingMapDelegate { get; set; }
+
+        [Export("mapViewDidFinishLoadingMap:")]
+        public void DidFinishLoadingMap(MKMapView mapView)
+        {
+            this.DidFinishLoadingMapDelegate?.Invoke(mapView);
         }
 
         public DidSelectAnnotationViewDelegate? DidSelectAnnotationViewDelegate { get; set; }
