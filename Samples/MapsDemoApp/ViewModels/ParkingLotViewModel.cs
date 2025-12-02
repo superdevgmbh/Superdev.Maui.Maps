@@ -1,18 +1,14 @@
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui.Controls.Maps;
 using Superdev.Maui.Mvvm;
-using Superdev.Maui.Services;
 
 namespace MapsDemoApp.ViewModels
 {
-    public class ParkingLotViewModel : BindableBase
+    public class ParkingLotViewModel : BindableBase, IEquatable<ParkingLotViewModel?>
     {
         private static readonly Point DefaultAnchor = new Point(0.5d, 1d);
 
-        private Location? location;
-        private string name = null!;
         private IRelayCommand<PinClickedEventArgs>? markerClickedCommand;
 
         public ParkingLotViewModel(
@@ -23,17 +19,9 @@ namespace MapsDemoApp.ViewModels
             this.Location = location;
         }
 
-        public string Name
-        {
-            get => this.name;
-            set => this.SetProperty(ref this.name, value);
-        }
+        public string Name { get; }
 
-        public Location? Location
-        {
-            get => this.location;
-            set => this.SetProperty(ref this.location, value);
-        }
+        public Location? Location { get; }
 
         public Point Anchor
         {
@@ -49,6 +37,50 @@ namespace MapsDemoApp.ViewModels
         {
             eventArgs.HideInfoWindow = true;
             Trace.WriteLine($"OnMarkerClicked: {this.Name}");
+        }
+
+        public bool Equals(ParkingLotViewModel? other)
+        {
+            if (other is null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return Equals(this.Location, other.Location) &&
+                   string.Equals(this.Name, other.Name, StringComparison.InvariantCultureIgnoreCase);
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != this.GetType())
+            {
+                return false;
+            }
+
+            return this.Equals((ParkingLotViewModel)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = new HashCode();
+            hashCode.Add(this.Location);
+            hashCode.Add(this.Name, StringComparer.InvariantCultureIgnoreCase);
+            return hashCode.ToHashCode();
         }
     }
 }

@@ -45,6 +45,7 @@ namespace MapsDemoApp.ViewModels
         private bool isTiltEnabled = true;
         private bool isZoomEnabled = true;
         private bool isReadonly;
+        private bool deselectSelectedItemOnMapClick;
         private Distance zoomLevel;
         private MapSpan? visibleRegion;
 
@@ -151,6 +152,12 @@ namespace MapsDemoApp.ViewModels
         {
             get => this.isReadonly;
             set => this.SetProperty(ref this.isReadonly, value);
+        }
+
+        public bool DeselectSelectedItemOnMapClick
+        {
+            get => this.deselectSelectedItemOnMapClick;
+            set => this.SetProperty(ref this.deselectSelectedItemOnMapClick, value);
         }
 
         public bool IsShowingUser

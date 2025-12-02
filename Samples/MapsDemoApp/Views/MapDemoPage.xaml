@@ -23,7 +23,7 @@
                 x:Name="SuperdevMauiMap"
                 Grid.Row="0"
                 CenterPosition="{Binding CurrentPosition, Mode=OneWay}"
-                DeselectSelectedItemOnMapClick="True"
+                DeselectSelectedItemOnMapClick="{Binding DeselectSelectedItemOnMapClick}"
                 IsReadonly="{Binding IsReadonly}"
                 IsRotateEnabled="{Binding IsRotateEnabled}"
                 IsScrollEnabled="{Binding IsScrollEnabled}"

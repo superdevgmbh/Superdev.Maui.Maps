@@ -177,6 +177,13 @@
                         </MultiBinding>
                     </Label.Text>
                 </Label>
+
+                <VerticalStackLayout Spacing="8">
+                    <Picker
+                        ItemDisplayBinding="{Binding Name}"
+                        ItemsSource="{Binding ParkingLots}"
+                        SelectedItem="{Binding SelectedParkingLot}" />
+                </VerticalStackLayout>
             </VerticalStackLayout>
 
             <VerticalStackLayout Spacing="4">
@@ -208,7 +215,7 @@
                 <Grid
                     ColumnDefinitions="*,*"
                     ColumnSpacing="8"
-                    RowDefinitions="Auto,Auto,Auto"
+                    RowDefinitions="Auto,Auto,Auto,Auto"
                     RowSpacing="8">
                     <Grid
                         Grid.Row="0"
@@ -304,6 +311,22 @@
                             Grid.Row="0"
                             Grid.Column="1"
                             Text="{Binding IsTrafficEnabled, StringFormat='IsTrafficEnabled={0}'}"
+                            VerticalTextAlignment="Center" />
+                    </Grid>
+                    <Grid
+                        Grid.Row="3"
+                        Grid.Column="0"
+                        ColumnDefinitions="Auto,*"
+                        ColumnSpacing="8">
+                        <Switch
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            IsToggled="{Binding DeselectSelectedItemOnMapClick}"
+                            VerticalOptions="Center" />
+                        <Label
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Text="{Binding DeselectSelectedItemOnMapClick, StringFormat='DeselectSelectedItemOnMapClick={0}'}"
                             VerticalTextAlignment="Center" />
                     </Grid>
                 </Grid>
