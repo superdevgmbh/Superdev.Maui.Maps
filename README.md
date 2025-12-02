@@ -44,32 +44,33 @@ Example:
 <m:Map
     ItemsSource="{Binding Locations}"
     SelectedItem="{Binding SelectedLocation, Mode=TwoWay}"
-    CenterPosition="{Binding MapCenter, Mode=TwoWay}"
-    ZoomLevel="{Binding MapZoom, Mode=TwoWay}"
-    IsReadonly="False"
-    IsTrafficEnabled="True" />
+    VisibleRegion="{Binding VisibleRegion, Mode=TwoWay}"
+    IsShowingUser="True" />
 ```
 
 #### Bindable Properties
 
-| Property               | Description                                                                                       |
-|------------------------|---------------------------------------------------------------------------------------------------|
-| `IsShowingUser`        | Shows an indicator for the user’s current location. *(Default: false)*                            |
-| `IsScrollEnabled`      | Enables or disables scrolling/panning by user input. *(Default: true)*                            |
-| `IsZoomEnabled`        | Enables or disables zooming by user input. *(Default: true)*                                      |
-| `IsRotateEnabled`      | Enables or disables rotation of the map by user input. *(Default: true)*                                        |
-| `IsTiltEnabled`        | Enables or disables tilting by user input. *(Default: true)*                                         |
-| `IsTrafficEnabled`     | Displays a live traffic overlay. *(Default: false)*                                               |
-| `MapType`              | Defines the visual style of the map (`Street`, `Satellite`, `Hybrid`, etc.).                      |
-| `IsReadonly`           | Makes the map pins non-interactive when `true`. *(Default: false)*                             |
-| `CenterPosition`       | Sets or tracks the center `Location` of the map. Changing this property moves the map's viewport. |
-| `ZoomLevel`            | Defines the zoom level as a `Distance`. *(Default: default(Distance))*                   |
-| `VisibleRegion`        | Defines the visible region (`MapSpan`) of the map (center + radius). You can either use `CenterPosition` + `ZoomLevel` to specify the current map position or you can use `VisibleRegion` to do so.                      |
-| `ItemsSource`          | The data collection used to generate pins. Don't forget  to specify an `ItemTemplate` or an `ItemTemplateSelector` to display pins.                                        |
-| `SelectedItem`         | Two-way: the currently selected item from the `ItemsSource`.                                      |
-| `ItemTemplate`         | Template used to render each element in `ItemsSource`.                           |
-| `ItemTemplateSelector` | Template selector used to dynamically choose templates.                  |
-| `MapElements`          | Collection of visual map overlays (pins, polylines, polygons, etc.) currently attached to the map.    |
+| Property                         | Description                                                                                                                                                                                         |
+|----------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `IsShowingUser`                  | Shows an indicator for the user’s current location. *(Default: false)*                                                                                                                              |
+| `IsScrollEnabled`                | Enables or disables scrolling/panning by user input. *(Default: true)*                                                                                                                              |
+| `IsZoomEnabled`                  | Enables or disables zooming by user input. *(Default: true)*                                                                                                                                        |
+| `IsRotateEnabled`                | Enables or disables rotation of the map by user input. *(Default: true)*                                                                                                                            |
+| `IsTiltEnabled`                  | Enables or disables tilting by user input. *(Default: true)*                                                                                                                                        |
+| `IsTrafficEnabled`               | Displays a live traffic overlay. *(Default: false)*                                                                                                                                                 |
+| `MapType`                        | Defines the visual style of the map (`Street`, `Satellite`, `Hybrid`, etc.).                                                                                                                        |
+| `IsReadonly`                     | Makes the map pins non-interactive when `true`. *(Default: false)*                                                                                                                                  |
+| `CenterPosition`                 | Sets or tracks the center `Location` of the map. Changing this property moves the map's viewport.                                                                                                   |
+| `ZoomLevel`                      | Defines the zoom level as a `Distance`. *(Default: default(Distance))*                                                                                                                              |
+| `VisibleRegion`                  | Defines the visible region (`MapSpan`) of the map (center + radius). You can either use `CenterPosition` + `ZoomLevel` to specify the current map position or you can use `VisibleRegion` to do so. |
+| `ItemsSource`                    | The data collection used to generate pins. Don't forget  to specify an `ItemTemplate` or an `ItemTemplateSelector` to display pins.                                                                 |
+| `SelectedItem`                   | Two-way: the currently selected item from the `ItemsSource`.                                                                                                                                        |
+| `ItemTemplate`                   | Template used to render each element in `ItemsSource`.                                                                                                                                              |
+| `ItemTemplateSelector`           | Template selector used to dynamically choose templates.                                                                                                                                             |
+| `MapElements`                    | Collection of visual map overlays (pins, polylines, polygons, etc.) currently attached to the map.                                                                                                  |
+| `MapClicked`                     | Event raised whenever the user taps on the map surface (not on a pin or element). Provides the tapped `Location` in `MapClickedEventArgs` as event args.                                            |
+| `MapClickedCommand`              | Command executed whenever the user taps on the map surface (not on a pin or element). Provides the tapped `Location` in `MapClickedEventArgs` as command parameter.                                 |
+| `DeselectSelectedItemOnMapClick` | When `true`, clicking an empty area of the map automatically clears the current `SelectedItem`. (Default: `false`)                                                                                    |
 
 ### Pin 📍
 The `Pin` control represents a map marker.
