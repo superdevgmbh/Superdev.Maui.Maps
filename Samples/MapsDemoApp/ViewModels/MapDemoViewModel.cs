@@ -116,6 +116,8 @@ namespace MapsDemoApp.ViewModels
 
                 await this.LoadPinsAsync();
 
+                this.SelectedParkingLot = this.ParkingLots.SingleOrDefault(p => p.Name == "Cham");
+
                 var parkingLocations = this.ParkingLots.Select(p => p.Location).ToArray();
                 var centerLocation = parkingLocations!.GetCenterLocation();
                 this.CurrentPosition = centerLocation != null ? centerLocation : Map.DefaultCenter;

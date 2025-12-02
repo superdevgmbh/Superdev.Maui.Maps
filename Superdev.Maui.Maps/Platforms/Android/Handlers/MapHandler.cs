@@ -17,6 +17,7 @@ using Superdev.Maui.Maps.Controls;
 using Superdev.Maui.Maps.Extensions;
 using Superdev.Maui.Maps.Platforms.Extensions;
 using Superdev.Maui.Maps.Platforms.Utils;
+using Debug = System.Diagnostics.Debug;
 using Exception = System.Exception;
 using IMap = Microsoft.Maui.Maps.IMap;
 using Map = Superdev.Maui.Maps.Controls.Map;
@@ -330,6 +331,13 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         public static void MapPins(MapHandler mapHandler, Map map)
         {
+            map.UpdatePinIsSelected();
+            RemoveAllMarkers(mapHandler);
+            mapHandler.AddPins(map.Pins);
+        }
+
+        private static void RemoveAllMarkers(MapHandler mapHandler)
+        {
             if (mapHandler.markers != null)
             {
                 for (var i = 0; i < mapHandler.markers.Count; i++)
@@ -339,8 +347,6 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
                 mapHandler.markers = null;
             }
-
-            mapHandler.AddPins(map.Pins);
         }
 
         public static void MapElements(MapHandler handler, IMap map)
@@ -351,34 +357,12 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
 
         private static void MapSelectedItem(MapHandler mapHandler, Map map)
         {
-            Trace.WriteLine("MapSelectedItem");
+            Debug.WriteLine("MapSelectedItem");
 
-            var selectedPins = map.Pins
-                .Where(p => p.IsSelected)
-                .ToArray();
-
-            foreach (var pin in selectedPins)
-            {
-                pin.IsSelected = false;
-            }
-
-            if (map.SelectedItem is object selectedItem)
-            {
-                var selectedPin = selectedItem as Pin;
-                if (selectedPin == null)
-                {
-                    var pins = map.Pins;
-                    selectedPin = pins.SingleOrDefault(p => Equals(p.BindingContext, map.SelectedItem));
-                }
-
-                if (selectedPin != null)
-                {
-                    selectedPin.IsSelected = true;
-                }
-            }
+            map.UpdatePinIsSelected();
         }
 
-        private void OnMapReady(GoogleMap googleMap)
+        private void OnMapReady(GoogleMap? googleMap)
         {
             if (googleMap == null)
             {
@@ -534,13 +518,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                 return;
             }
 
-            var selectedPins = map.Pins
-                .Where(p => p.IsSelected);
-
-            foreach (var pin in selectedPins)
-            {
-                pin.IsSelected = false;
-            }
+            map.DeselectSelectedPins();
 
             selectedPin.IsSelected = true;
 

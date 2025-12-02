@@ -3,7 +3,6 @@ using Microsoft.Maui.Maps.Handlers;
 using IMap = Microsoft.Maui.Maps.IMap;
 using Map = Superdev.Maui.Maps.Controls.Map;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 using CoreLocation;
 using Foundation;
@@ -206,13 +205,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
                 return;
             }
 
-            var selectedPins = map.Pins
-                .Where(p => p.IsSelected);
-
-            foreach (var pin in selectedPins)
-            {
-                pin.IsSelected = false;
-            }
+            map.DeselectSelectedPins();
 
             selectedPin.IsSelected = true;
 
@@ -355,13 +348,14 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
             mkMapView.ZoomEnabled = map.IsZoomEnabled;
         }
 
-        public static void MapPins(MapHandler handler, Map map)
+        public static void MapPins(MapHandler mapHandler, Map map)
         {
-            if (handler.PlatformView is not MapView mapView)
+            if (mapHandler.PlatformView is not MapView mapView)
             {
                 return;
             }
 
+            map.UpdatePinIsSelected();
             mapView.RemoveAllAnnotations();
             mapView.AddPins(map.Pins);
         }
@@ -385,29 +379,7 @@ namespace Superdev.Maui.Maps.Platforms.Handlers
         {
             Debug.WriteLine("MapSelectedItem");
 
-            var selectedPins = map.Pins
-                .Where(p => p.IsSelected)
-                .ToArray();
-
-            foreach (var pin in selectedPins)
-            {
-                pin.IsSelected = false;
-            }
-
-            if (map.SelectedItem is object selectedItem)
-            {
-                var selectedPin = selectedItem as Pin;
-                if (selectedPin == null)
-                {
-                    var pins = map.Pins;
-                    selectedPin = pins.SingleOrDefault(p => Equals(p.BindingContext, selectedItem));
-                }
-
-                if (selectedPin != null)
-                {
-                    selectedPin.IsSelected = true;
-                }
-            }
+            map.UpdatePinIsSelected();
         }
 
         private static void MapIsReadonly(MapHandler handler, Map map)
